@@ -46,6 +46,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
 
   // Image zoom state
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [mediaError, setMediaError] = useState(false);
 
   // Touch swipe handling
   const touchStartX = useRef<number | null>(null);
@@ -90,6 +91,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
     setZoomLevel(1);
     setIsPlaying(false);
     setCurrentTime(0);
+    setMediaError(false);
   }, [currentIndex]);
 
   if (!isOpen || !currentMedia) return null;
@@ -253,11 +255,18 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
 
         {/* Center Media Container */}
         <div className="relative max-w-full max-h-full flex items-center justify-center">
-          {currentMedia.type === 'photo' ? (
+          {mediaError || !currentMedia.url ? (
+            <div className="flex flex-col items-center justify-center p-8 sm:p-12 bg-neutral-900/90 rounded-2xl border border-white/10 text-center max-w-md shadow-2xl">
+              <Camera className="w-12 h-12 text-neutral-500 mb-3" />
+              <h4 className="text-base font-bold text-neutral-200">Belum ada foto/video</h4>
+              <p className="text-xs text-neutral-400 mt-1 max-w-xs">{currentMedia.title}</p>
+            </div>
+          ) : currentMedia.type === 'photo' ? (
             <div className="relative max-w-5xl max-h-[75vh] sm:max-h-[82vh] overflow-hidden rounded-xl">
               <img
                 src={currentMedia.url}
                 alt={currentMedia.title}
+                onError={() => setMediaError(true)}
                 style={{ transform: `scale(${zoomLevel})` }}
                 className="max-h-[75vh] sm:max-h-[82vh] w-auto max-w-full object-contain transition-transform duration-150 select-none shadow-2xl rounded-xl"
                 draggable={false}
@@ -268,6 +277,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
               <video
                 ref={videoRef}
                 src={currentMedia.url}
+                onError={() => setMediaError(true)}
                 className="w-full max-h-[70vh] sm:max-h-[75vh] object-contain cursor-pointer"
                 onClick={togglePlay}
                 onPlay={() => setIsPlaying(true)}

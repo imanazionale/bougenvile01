@@ -5,36 +5,92 @@ import {
   Play,
   Film,
   Camera,
-  Layers,
   Upload,
   Maximize2,
   Trash2,
   Plus,
-  Sparkles,
+  Edit2,
+  ArrowLeft,
+  ArrowRight,
+  RefreshCw,
+  Lock,
 } from 'lucide-react';
-import { MediaItem } from '../types';
+import { GallerySlotInfo, MediaItem } from '../types';
+import { getNextGallerySlot } from '../lib/gallerySlots';
 
 interface PropertyGallerySectionProps {
   mediaList: MediaItem[];
   onOpenLightbox: (index: number) => void;
+  isAdmin?: boolean;
+  onRequestAdminLogin?: (reason?: string) => void;
   onAddMediaFiles?: (files: FileList) => void;
-  onRemoveMedia?: (id: string) => void;
+  onRemoveMedia?: (item: MediaItem) => void;
   onUploadClusterPhoto?: (file: File) => void;
+  onUploadNextSlot?: (file: File, slotInfo: GallerySlotInfo) => void;
+  onReorderMedia?: (index: number, direction: 'left' | 'right') => void;
+  onEditCaption?: (item: MediaItem) => void;
+  onReplaceMedia?: (item: MediaItem, file: File) => void;
+  isUploading?: boolean;
+  uploadProgressText?: string;
 }
+
+// Component to safely render photo with fallback placeholder
+const GalleryCardImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !src) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900 text-neutral-400 p-4 text-center">
+        <Camera className="w-8 h-8 text-neutral-500 mb-1" />
+        <span className="text-xs font-semibold text-neutral-300">Belum ada foto/video</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setHasError(true)}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      loading="lazy"
+    />
+  );
+};
 
 export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
   mediaList,
   onOpenLightbox,
+  isAdmin = false,
+  onRequestAdminLogin,
   onAddMediaFiles,
   onRemoveMedia,
   onUploadClusterPhoto,
+  onUploadNextSlot,
+  onReorderMedia,
+  onEditCaption,
+  onReplaceMedia,
+  isUploading = false,
+  uploadProgressText = 'Mengunggah ke Supabase Storage...',
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const clusterInputRef = useRef<HTMLInputElement>(null);
+  const replaceFileInputRef = useRef<HTMLInputElement>(null);
+  const [targetReplaceItem, setTargetReplaceItem] = useState<MediaItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  const hasClusterPhoto = mediaList.some((m) => m.category === 'cluster' || m.id === 'media-3-cluster');
+  // Dynamically determine next gallery slot based on existing records
+  const nextSlot = getNextGallerySlot(mediaList);
+
+  const hasClusterPhoto = mediaList.some(
+    (m) =>
+      m.sort_order === 2 ||
+      m.sort_order === 3 ||
+      m.category === 'cluster' ||
+      m.id === 'media-3-cluster' ||
+      (m.caption && (m.caption.toLowerCase().includes('jalan') || m.caption.toLowerCase().includes('cluster')))
+  );
 
   // Filter media based on tab
   const filteredList = mediaList.filter((item) => {
@@ -55,18 +111,43 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
     }
   };
 
+  const handleAddClick = () => {
+    if (!isAdmin) {
+      if (onRequestAdminLogin) {
+        onRequestAdminLogin('Silakan login sebagai Admin terlebih dahulu untuk mengunggah media.');
+      }
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleNextSlotUploadClick = () => {
+    if (!isAdmin) {
+      if (onRequestAdminLogin) {
+        onRequestAdminLogin(`Silakan login sebagai Admin terlebih dahulu untuk mengunggah ${nextSlot.label}.`);
+      }
+      return;
+    }
+    clusterInputRef.current?.click();
+  };
+
   return (
     <section className="mt-10 sm:mt-12 pt-8 border-t border-neutral-800/80">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="text-xs uppercase font-extrabold tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-0.5 rounded-full">
               Koleksi Media Asli
             </span>
             <span className="text-xs font-mono font-bold text-neutral-400 bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded-md">
               Total {mediaList.length} Media
             </span>
+            {isAdmin && (
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                Admin Mode Aktif
+              </span>
+            )}
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <span>GALERI RUMAH</span>
@@ -80,33 +161,52 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
         </div>
 
         {/* Action Controls & Navigation */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {onAddMediaFiles && (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    onAddMediaFiles(e.target.files);
-                    e.target.value = '';
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition shadow-sm cursor-pointer"
-                title="Unggah foto atau video baru dari perangkat Anda"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tambah Foto/Video</span>
-              </button>
-            </>
-          )}
+        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          {/* Upload Button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0 && onAddMediaFiles) {
+                onAddMediaFiles(e.target.files);
+                e.target.value = '';
+              }
+            }}
+          />
+          {/* Replace Media File Input */}
+          <input
+            ref={replaceFileInputRef}
+            type="file"
+            accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file && targetReplaceItem && onReplaceMedia) {
+                onReplaceMedia(targetReplaceItem, file);
+              }
+              setTargetReplaceItem(null);
+              e.target.value = '';
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAddClick}
+            disabled={isUploading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
+            title={isAdmin ? 'Unggah foto atau video ke Supabase Storage' : 'Login Admin untuk mengunggah'}
+          >
+            {isUploading ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : !isAdmin ? (
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+            ) : (
+              <Plus className="w-3.5 h-3.5" />
+            )}
+            <span>{isUploading ? 'Mengunggah...' : 'Tambah Foto/Video'}</span>
+          </button>
 
           {/* Carousel Left / Right Scroll Buttons */}
           <div className="flex items-center gap-1 bg-neutral-900 p-1 rounded-xl border border-neutral-800">
@@ -129,6 +229,14 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Uploading indicator alert if active */}
+      {isUploading && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-3 animate-pulse">
+          <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-amber-400" />
+          <span>{uploadProgressText}</span>
+        </div>
+      )}
 
       {/* Filter Chips Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none text-xs">
@@ -177,6 +285,9 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
       >
         {filteredList.map((item, index) => {
           const originalIndex = mediaList.findIndex((m) => m.id === item.id);
+          const isFirst = originalIndex === 0;
+          const isLast = originalIndex === mediaList.length - 1;
+
           return (
             <div
               key={item.id}
@@ -188,12 +299,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                 className="relative aspect-[4/3] w-full bg-neutral-950 overflow-hidden cursor-pointer"
               >
                 {item.type === 'photo' ? (
-                  <img
-                    src={item.url}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
+                  <GalleryCardImage src={item.url} alt={item.title} />
                 ) : (
                   <div className="w-full h-full relative bg-neutral-950 flex items-center justify-center">
                     <video
@@ -229,7 +335,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                   </div>
                 </div>
 
-                {/* Bottom Index Indicator Badge (e.g. 1 / 8) */}
+                {/* Bottom Index Indicator Badge */}
                 <div className="absolute bottom-2 right-2 z-10">
                   <span className="text-[10px] font-mono font-bold bg-neutral-950/90 text-neutral-300 border border-white/10 px-2 py-0.5 rounded shadow">
                     {originalIndex + 1} / {mediaList.length}
@@ -253,8 +359,87 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                   )}
                 </div>
 
+                {/* Admin Management Controls (Reorder & Edit Caption & Delete) */}
+                {isAdmin && (
+                  <div className="mt-2.5 pt-2 border-t border-neutral-800/80 flex items-center justify-between gap-1 text-[11px]">
+                    <div className="flex items-center gap-1">
+                      {onReorderMedia && (
+                        <>
+                          <button
+                            type="button"
+                            disabled={isFirst}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onReorderMedia(originalIndex, 'left');
+                            }}
+                            className="p-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white disabled:opacity-30 cursor-pointer transition"
+                            title="Geser Urutan ke Kiri / Atas"
+                          >
+                            <ArrowLeft className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isLast}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onReorderMedia(originalIndex, 'right');
+                            }}
+                            className="p-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white disabled:opacity-30 cursor-pointer transition"
+                            title="Geser Urutan ke Kanan / Bawah"
+                          >
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
+                      {onReplaceMedia && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTargetReplaceItem(item);
+                            replaceFileInputRef.current?.click();
+                          }}
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-sky-500/20 text-neutral-300 hover:text-sky-300 cursor-pointer transition"
+                          title="Ganti Foto/Video (Pilih file baru dari perangkat)"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          <span>Ganti</span>
+                        </button>
+                      )}
+                      {onEditCaption && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditCaption(item);
+                          }}
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-amber-500/20 text-neutral-300 hover:text-amber-300 cursor-pointer transition"
+                          title="Edit Caption / Keterangan"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          <span>Caption</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {onRemoveMedia && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveMedia(item);
+                        }}
+                        className="text-neutral-500 hover:text-rose-400 p-1 rounded transition cursor-pointer"
+                        title="Hapus media dari Supabase"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Card Footer: Action button */}
-                <div className="mt-3 pt-2.5 border-t border-neutral-800/80 flex items-center justify-between">
+                <div className="mt-2.5 pt-2 border-t border-neutral-800/80 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => onOpenLightbox(originalIndex)}
@@ -264,10 +449,10 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                     <ChevronRight className="w-3 h-3" />
                   </button>
 
-                  {item.isUploadedByUser && onRemoveMedia && (
+                  {!isAdmin && item.isUploadedByUser && onRemoveMedia && (
                     <button
                       type="button"
-                      onClick={() => onRemoveMedia(item.id)}
+                      onClick={() => onRemoveMedia(item)}
                       className="text-neutral-500 hover:text-rose-400 p-1 rounded transition cursor-pointer"
                       title="Hapus media ini"
                     >
@@ -280,28 +465,32 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           );
         })}
 
-        {/* Placeholder Upload Card for Cluster Street if not yet uploaded */}
-        {!hasClusterPhoto && activeFilter !== 'videos' && onUploadClusterPhoto && (
+        {/* Placeholder Upload Card for Next Dynamic Slot */}
+        {nextSlot && (activeFilter === 'all' || (nextSlot.defaultType === 'video' ? activeFilter !== 'photos' : activeFilter !== 'videos')) && (
           <div className="snap-start shrink-0 w-[260px] sm:w-[300px] md:w-[320px] rounded-2xl bg-neutral-900/60 border-2 border-dashed border-amber-500/40 hover:border-amber-400 transition-all duration-200 overflow-hidden shadow-xl flex flex-col justify-between p-4 group">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-md">
-                  4. Jalanan Cluster
+                  {nextSlot.badge}
                 </span>
                 <span className="text-[10px] text-neutral-400 font-medium bg-neutral-800 px-2 py-0.5 rounded">
-                  Belum Diunggah
+                  Belum ada foto/video
                 </span>
               </div>
 
               <div className="aspect-[4/3] rounded-xl bg-neutral-950/80 border border-neutral-800/80 flex flex-col items-center justify-center p-4 text-center">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
-                  <Camera className="w-6 h-6" />
+                  {nextSlot.defaultType === 'video' ? (
+                    <Film className="w-6 h-6" />
+                  ) : (
+                    <Camera className="w-6 h-6" />
+                  )}
                 </div>
                 <h4 className="text-xs font-bold text-white mb-1">
-                  Foto Kondisi Jalan Cluster
+                  {nextSlot.label}
                 </h4>
                 <p className="text-[11px] text-neutral-400 leading-tight line-clamp-3">
-                  File foto jalan cluster belum sampai ke sistem aplikasi. Klik tombol di bawah untuk memilih file dari galeri/folder Anda.
+                  {nextSlot.description} {isAdmin ? 'Klik tombol di bawah untuk memilih file asli.' : 'Admin dapat mengunggah file asli untuk slot ini.'}
                 </p>
               </div>
             </div>
@@ -310,23 +499,36 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
               <input
                 ref={clusterInputRef}
                 type="file"
-                accept="image/*"
+                accept={
+                  nextSlot.defaultType === 'video'
+                    ? 'video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'
+                    : 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.heic,.heif,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'
+                }
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    onUploadClusterPhoto(file);
+                    if (onUploadNextSlot) {
+                      onUploadNextSlot(file, nextSlot);
+                    } else if (onUploadClusterPhoto) {
+                      onUploadClusterPhoto(file);
+                    }
                     e.target.value = '';
                   }
                 }}
               />
               <button
                 type="button"
-                onClick={() => clusterInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition shadow-md cursor-pointer"
+                onClick={handleNextSlotUploadClick}
+                disabled={isUploading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition shadow-md cursor-pointer disabled:opacity-50"
               >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Pilih Foto Jalan Cluster</span>
+                {!isAdmin ? (
+                  <Lock className="w-3.5 h-3.5" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                <span>{isAdmin ? nextSlot.buttonLabel : 'Login Admin untuk Upload'}</span>
               </button>
             </div>
           </div>

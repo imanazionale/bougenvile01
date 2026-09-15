@@ -18,10 +18,6 @@ import {
 } from 'lucide-react';
 import { ColorTheme, PhotoLayout, PropertyData, PropertyPhotos } from '../types';
 
-// Bundled fallback images
-import fallbackHouseExterior from '../assets/images/house_exterior_1789381755113.jpg';
-import fallbackMezzanineInterior from '../assets/images/mezzanine_interior_1789381782369.jpg';
-
 interface AdPosterProps {
   data: PropertyData;
   theme: ColorTheme;
@@ -51,17 +47,25 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
     const [mezzanineSrc, setMezzanineSrc] = useState<string>(
       photos?.mezzanineInterior || '/20260905_130239.jpg'
     );
+    const [exteriorError, setExteriorError] = useState(false);
+    const [mezzanineError, setMezzanineError] = useState(false);
 
     const exteriorInputRef = useRef<HTMLInputElement>(null);
     const mezzanineInputRef = useRef<HTMLInputElement>(null);
 
     // Update if parent passes updated photo URLs
     React.useEffect(() => {
-      if (photos?.heroExterior) setExteriorSrc(photos.heroExterior);
+      if (photos?.heroExterior) {
+        setExteriorSrc(photos.heroExterior);
+        setExteriorError(false);
+      }
     }, [photos?.heroExterior]);
 
     React.useEffect(() => {
-      if (photos?.mezzanineInterior) setMezzanineSrc(photos.mezzanineInterior);
+      if (photos?.mezzanineInterior) {
+        setMezzanineSrc(photos.mezzanineInterior);
+        setMezzanineError(false);
+      }
     }, [photos?.mezzanineInterior]);
 
     const handleDrop = (e: React.DragEvent, type: 'heroExterior' | 'mezzanineInterior') => {
@@ -184,13 +188,21 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
             {photoLayout === 'hybrid-inset' && (
               <div className="relative w-full h-full rounded-xl overflow-hidden shadow-md border border-neutral-200/80 dark:border-neutral-700/80 group bg-neutral-100 dark:bg-neutral-800">
                 {/* Clean Hero Image - Real Photo Without Murky Dark Gradient */}
-                <img
-                  src={exteriorSrc}
-                  onError={() => setExteriorSrc(fallbackHouseExterior)}
-                  alt="Foto Asli Tampak Depan Rumah Kontrakan Depok"
-                  className="w-full h-full object-cover object-center"
-                  referrerPolicy="no-referrer"
-                />
+                {exteriorSrc && !exteriorError ? (
+                  <img
+                    src={exteriorSrc}
+                    onError={() => setExteriorError(true)}
+                    alt="Foto Asli Tampak Depan Rumah Kontrakan Depok"
+                    className="w-full h-full object-cover object-center"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/90 text-neutral-400 p-3 text-center">
+                    <Camera className="w-8 h-8 text-neutral-500 mb-1" />
+                    <span className="text-xs font-semibold text-neutral-300">Belum ada foto/video</span>
+                    <span className="text-[10px] text-neutral-500 mt-0.5">Tampak Depan Rumah</span>
+                  </div>
+                )}
 
                 {/* Interactive upload overlay for Hero Image */}
                 {isInteractive && onPhotoUpload && (
@@ -213,13 +225,21 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
 
                 {/* Inset Real Mezzanine Interior Card */}
                 <div className="absolute bottom-2.5 right-2.5 w-32 sm:w-44 aspect-[4/3] rounded-lg overflow-hidden border-2 border-white shadow-xl z-20 bg-neutral-900 group/inset">
-                  <img
-                    src={mezzanineSrc}
-                    onError={() => setMezzanineSrc(fallbackMezzanineInterior)}
-                    alt="Foto Asli Area Mezanine 1/2 Lantai"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+                  {mezzanineSrc && !mezzanineError ? (
+                    <img
+                      src={mezzanineSrc}
+                      onError={() => setMezzanineError(true)}
+                      alt="Foto Asli Area Mezanine 1/2 Lantai"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/95 text-neutral-400 p-2 text-center">
+                      <Layers className="w-5 h-5 text-neutral-500 mb-1" />
+                      <span className="text-[10px] font-semibold text-neutral-300 leading-tight">Belum ada foto/video</span>
+                      <span className="text-[8px] text-neutral-500">Area Mezanine</span>
+                    </div>
+                  )}
                   
                   {/* Interactive upload overlay for Mezzanine Inset */}
                   {isInteractive && onPhotoUpload && (
@@ -259,13 +279,21 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
             {photoLayout === 'split-dual' && (
               <div className="grid grid-cols-2 gap-2 h-full rounded-xl overflow-hidden">
                 <div className="relative h-full rounded-lg overflow-hidden border border-neutral-200/80 dark:border-neutral-700/80 shadow-md bg-neutral-100 dark:bg-neutral-800 group">
-                  <img
-                    src={exteriorSrc}
-                    onError={() => setExteriorSrc(fallbackHouseExterior)}
-                    alt="Foto Asli Fasad Rumah"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+                  {exteriorSrc && !exteriorError ? (
+                    <img
+                      src={exteriorSrc}
+                      onError={() => setExteriorError(true)}
+                      alt="Foto Asli Fasad Rumah"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/90 text-neutral-400 p-2 text-center">
+                      <Camera className="w-6 h-6 text-neutral-500 mb-1" />
+                      <span className="text-[10px] font-semibold text-neutral-300">Belum ada foto/video</span>
+                      <span className="text-[8px] text-neutral-500">Tampak Depan</span>
+                    </div>
+                  )}
                   {isInteractive && onPhotoUpload && (
                     <div
                       onDrop={(e) => handleDrop(e, 'heroExterior')}
@@ -285,13 +313,21 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
                 </div>
 
                 <div className="relative h-full rounded-lg overflow-hidden border border-neutral-200/80 dark:border-neutral-700/80 shadow-md bg-neutral-100 dark:bg-neutral-800 group">
-                  <img
-                    src={mezzanineSrc}
-                    onError={() => setMezzanineSrc(fallbackMezzanineInterior)}
-                    alt="Foto Asli Area Mezanine"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
+                  {mezzanineSrc && !mezzanineError ? (
+                    <img
+                      src={mezzanineSrc}
+                      onError={() => setMezzanineError(true)}
+                      alt="Foto Asli Area Mezanine"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/90 text-neutral-400 p-2 text-center">
+                      <Layers className="w-6 h-6 text-neutral-500 mb-1" />
+                      <span className="text-[10px] font-semibold text-neutral-300">Belum ada foto/video</span>
+                      <span className="text-[8px] text-neutral-500">Area Mezanine</span>
+                    </div>
+                  )}
                   {isInteractive && onPhotoUpload && (
                     <div
                       onDrop={(e) => handleDrop(e, 'mezzanineInterior')}
@@ -315,13 +351,21 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
             {/* Layout 3: Hero Exterior Focused */}
             {photoLayout === 'hero-exterior' && (
               <div className="relative w-full h-full rounded-xl overflow-hidden shadow-md border border-neutral-200/80 dark:border-neutral-700/80 bg-neutral-100 dark:bg-neutral-800 group">
-                <img
-                  src={exteriorSrc}
-                  onError={() => setExteriorSrc(fallbackHouseExterior)}
-                  alt="Foto Asli Rumah Kontrakan Depok"
-                  className="w-full h-full object-cover object-center"
-                  referrerPolicy="no-referrer"
-                />
+                {exteriorSrc && !exteriorError ? (
+                  <img
+                    src={exteriorSrc}
+                    onError={() => setExteriorError(true)}
+                    alt="Foto Asli Rumah Kontrakan Depok"
+                    className="w-full h-full object-cover object-center"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/90 text-neutral-400 p-3 text-center">
+                    <Camera className="w-8 h-8 text-neutral-500 mb-1" />
+                    <span className="text-xs font-semibold text-neutral-300">Belum ada foto/video</span>
+                    <span className="text-[10px] text-neutral-500 mt-0.5">Tampak Depan Rumah</span>
+                  </div>
+                )}
                 {isInteractive && onPhotoUpload && (
                   <div
                     onDrop={(e) => handleDrop(e, 'heroExterior')}

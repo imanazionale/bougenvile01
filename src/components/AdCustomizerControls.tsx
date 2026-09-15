@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Download,
   Eye,
@@ -14,7 +14,8 @@ import {
   Camera,
   Upload,
   RotateCcw,
-  Tag,
+  Edit3,
+  Lock,
 } from 'lucide-react';
 import { ColorThemeId, PhotoLayout, PropertyPhotos } from '../types';
 import { COLOR_THEMES } from '../data';
@@ -37,6 +38,9 @@ interface AdCustomizerControlsProps {
   ) => void;
   onResetPhotos: () => void;
   priceFull?: string;
+  isAdmin?: boolean;
+  onRequestAdminLogin?: (reason?: string) => void;
+  onOpenEditProperty?: () => void;
 }
 
 export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
@@ -54,7 +58,37 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
   onPhotoUpload,
   onResetPhotos,
   priceFull = 'Rp 2,3 Juta / bulan',
+  isAdmin = false,
+  onRequestAdminLogin,
+  onOpenEditProperty,
 }) => {
+  const exteriorInputRef = useRef<HTMLInputElement>(null);
+  const mezzanineInputRef = useRef<HTMLInputElement>(null);
+  const clusterInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTriggerUpload = (type: 'exterior' | 'mezzanine' | 'cluster') => {
+    if (!isAdmin) {
+      if (onRequestAdminLogin) {
+        onRequestAdminLogin('Silakan login sebagai Admin terlebih dahulu untuk mengunggah foto properti.');
+      }
+      return;
+    }
+
+    if (type === 'exterior') exteriorInputRef.current?.click();
+    else if (type === 'mezzanine') mezzanineInputRef.current?.click();
+    else if (type === 'cluster') clusterInputRef.current?.click();
+  };
+
+  const handleEditPropertyClick = () => {
+    if (!isAdmin) {
+      if (onRequestAdminLogin) {
+        onRequestAdminLogin('Silakan login sebagai Admin terlebih dahulu untuk mengedit informasi properti.');
+      }
+      return;
+    }
+    if (onOpenEditProperty) onOpenEditProperty();
+  };
+
   return (
     <div className="space-y-4">
       {/* Top Primary Action Buttons */}
@@ -72,7 +106,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
         <button
           type="button"
           onClick={onOpenPreview}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-700 transition"
+          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-700 transition cursor-pointer"
         >
           <Eye className="w-4 h-4 text-amber-400" />
           <span>Simulasi Feed</span>
@@ -81,7 +115,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
         <button
           type="button"
           onClick={onOpenCaption}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-700 transition"
+          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-100 font-semibold text-xs sm:text-sm border border-neutral-700 transition cursor-pointer"
         >
           <Copy className="w-4 h-4 text-emerald-400" />
           <span>Salin Teks Iklan</span>
@@ -96,18 +130,55 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-200 uppercase tracking-wider">
               <Camera className="w-3.5 h-3.5 text-amber-400" />
-              <span>Foto Asli Rumah (Tanpa Efek AI)</span>
+              <span>Foto Asli Rumah (Tersimpan di Supabase Storage)</span>
             </div>
-            <button
-              type="button"
-              onClick={onResetPhotos}
-              className="text-[11px] text-neutral-400 hover:text-amber-300 transition flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800"
-              title="Kembalikan foto asli bawaan"
-            >
-              <RotateCcw className="w-3 h-3" />
-              <span>Reset</span>
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={onResetPhotos}
+                className="text-[11px] text-neutral-400 hover:text-amber-300 transition flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 cursor-pointer"
+                title="Kembalikan foto asli bawaan"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            )}
           </div>
+
+          {/* Hidden inputs */}
+          <input
+            ref={exteriorInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onPhotoUpload('heroExterior', f);
+              e.target.value = '';
+            }}
+          />
+          <input
+            ref={mezzanineInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onPhotoUpload('mezzanineInterior', f);
+              e.target.value = '';
+            }}
+          />
+          <input
+            ref={clusterInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onPhotoUpload('clusterStreet', f);
+              e.target.value = '';
+            }}
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             {/* Tampak Depan Hero */}
@@ -116,26 +187,31 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
                 <span className="text-[11px] font-semibold text-white">Tampak Depan</span>
                 <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1 rounded font-medium">Hero Utama</span>
               </div>
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-950 border border-neutral-800">
-                <img
-                  src={photos.heroExterior}
-                  alt="Tampak Depan"
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-950 border border-neutral-800 flex items-center justify-center">
+                {photos.heroExterior ? (
+                  <img
+                    src={photos.heroExterior}
+                    alt="Tampak Depan"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center p-2">
+                    <Camera className="w-5 h-5 text-neutral-500 mb-1" />
+                    <span className="text-[10px] text-neutral-400">Belum ada foto/video</span>
+                  </div>
+                )}
               </div>
-              <label className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center">
-                <Upload className="w-3 h-3 shrink-0" />
-                <span>Pilih Foto Fasad</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) onPhotoUpload('heroExterior', f);
-                  }}
-                />
-              </label>
+              <button
+                type="button"
+                onClick={() => handleTriggerUpload('exterior')}
+                className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center"
+              >
+                {!isAdmin ? <Lock className="w-3 h-3 shrink-0" /> : <Upload className="w-3 h-3 shrink-0" />}
+                <span>{isAdmin ? 'Pilih Foto Fasad' : 'Pilih Foto Fasad'}</span>
+              </button>
               <span className="text-[10px] text-neutral-400 text-center truncate">Fasad & Bangunan Asli</span>
             </div>
 
@@ -145,26 +221,31 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
                 <span className="text-[11px] font-semibold text-white">Area Mezanine</span>
                 <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded font-medium">1/2 Lantai</span>
               </div>
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-950 border border-neutral-800">
-                <img
-                  src={photos.mezzanineInterior}
-                  alt="Area Mezanine"
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-950 border border-neutral-800 flex items-center justify-center">
+                {photos.mezzanineInterior ? (
+                  <img
+                    src={photos.mezzanineInterior}
+                    alt="Area Mezanine"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center p-2">
+                    <Camera className="w-5 h-5 text-neutral-500 mb-1" />
+                    <span className="text-[10px] text-neutral-400">Belum ada foto/video</span>
+                  </div>
+                )}
               </div>
-              <label className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center">
-                <Upload className="w-3 h-3 shrink-0" />
-                <span>Pilih Foto Mezanine</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) onPhotoUpload('mezzanineInterior', f);
-                  }}
-                />
-              </label>
+              <button
+                type="button"
+                onClick={() => handleTriggerUpload('mezzanine')}
+                className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center"
+              >
+                {!isAdmin ? <Lock className="w-3 h-3 shrink-0" /> : <Upload className="w-3 h-3 shrink-0" />}
+                <span>{isAdmin ? 'Pilih Foto Mezanine' : 'Pilih Foto Mezanine'}</span>
+              </button>
               <span className="text-[10px] text-neutral-400 text-center truncate">Tangga & Mezanine</span>
             </div>
 
@@ -175,7 +256,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
                 {photos.clusterStreet ? (
                   <span className="text-[9px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-1 rounded font-medium">Tersedia</span>
                 ) : (
-                  <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded font-medium">Perlu Diupload</span>
+                  <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1 rounded font-medium">Belum ada foto/video</span>
                 )}
               </div>
               <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-950 border border-neutral-800 flex items-center justify-center">
@@ -184,27 +265,25 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
                     src={photos.clusterStreet}
                     alt="Kondisi Jalanan Cluster"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-center p-2">
                     <Camera className="w-5 h-5 text-neutral-500 mb-1" />
-                    <span className="text-[10px] text-neutral-400">Belum ada file</span>
+                    <span className="text-[10px] text-neutral-400">Belum ada foto/video</span>
                   </div>
                 )}
               </div>
-              <label className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center">
-                <Upload className="w-3 h-3 shrink-0" />
+              <button
+                type="button"
+                onClick={() => handleTriggerUpload('cluster')}
+                className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center"
+              >
+                {!isAdmin ? <Lock className="w-3 h-3 shrink-0" /> : <Upload className="w-3 h-3 shrink-0" />}
                 <span>{photos.clusterStreet ? 'Ganti Foto Jalan' : 'Pilih Foto Jalan'}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) onPhotoUpload('clusterStreet', f);
-                  }}
-                />
-              </label>
+              </button>
               <span className="text-[10px] text-neutral-400 text-center truncate">Lingkungan Jalan Cluster</span>
             </div>
           </div>
@@ -228,7 +307,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
                   key={theme.id}
                   type="button"
                   onClick={() => onThemeChange(theme.id as ColorThemeId)}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all ${
+                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                     isActive
                       ? 'bg-amber-500/10 border-amber-500/80 text-white shadow-sm'
                       : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-neutral-200'
@@ -268,7 +347,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
             <button
               type="button"
               onClick={() => onLayoutChange('hybrid-inset')}
-              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 cursor-pointer ${
                 photoLayout === 'hybrid-inset'
                   ? 'bg-amber-500/15 border-amber-500 text-amber-300 font-bold'
                   : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-neutral-200'
@@ -281,7 +360,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
             <button
               type="button"
               onClick={() => onLayoutChange('split-dual')}
-              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 cursor-pointer ${
                 photoLayout === 'split-dual'
                   ? 'bg-amber-500/15 border-amber-500 text-amber-300 font-bold'
                   : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-neutral-200'
@@ -294,7 +373,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
             <button
               type="button"
               onClick={() => onLayoutChange('hero-exterior')}
-              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 cursor-pointer ${
                 photoLayout === 'hero-exterior'
                   ? 'bg-amber-500/15 border-amber-500 text-amber-300 font-bold'
                   : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:text-neutral-200'
@@ -311,7 +390,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
           <button
             type="button"
             onClick={onToggleGuides}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition ${
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition cursor-pointer ${
               showGuides
                 ? 'bg-rose-500/10 border-rose-500 text-rose-300'
                 : 'bg-neutral-950/50 border-neutral-800 text-neutral-400 hover:text-neutral-200'
@@ -329,19 +408,30 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
 
       </div>
 
-      {/* Property Information Verification Card (Strict Compliance Note) */}
-      <div className="p-3.5 rounded-xl bg-neutral-900/50 border border-neutral-800/70 text-xs text-neutral-400 space-y-1.5">
-        <div className="flex items-center justify-between">
+      {/* Property Information Verification Card with Edit Option */}
+      <div className="p-3.5 rounded-xl bg-neutral-900/50 border border-neutral-800/70 text-xs text-neutral-400 space-y-2">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-1.5 text-neutral-300 font-semibold">
             <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
             <span>Kepatuhan Data & Informasi Resmi:</span>
           </div>
-          <span className="text-amber-300 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded text-[11px]">
-            {priceFull}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-amber-300 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded text-[11px]">
+              {priceFull}
+            </span>
+            <button
+              type="button"
+              onClick={handleEditPropertyClick}
+              className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-800 hover:bg-amber-500/20 text-neutral-300 hover:text-amber-300 text-[11px] font-medium border border-neutral-700 transition cursor-pointer"
+              title="Edit Informasi Properti di Supabase"
+            >
+              {!isAdmin ? <Lock className="w-3 h-3" /> : <Edit3 className="w-3 h-3" />}
+              <span>Edit Info Properti</span>
+            </button>
+          </div>
         </div>
         <p className="leading-relaxed text-[11px] text-neutral-400">
-          Semua detail mengacu persis pada informasi yang Anda berikan: <strong>Mezanine 1/2 lantai</strong>, <strong>LT 88 m²</strong>, <strong>Sewa: {priceFull}</strong> di <strong>Taman Jaya, Cipayung – Depok</strong> dengan 6 poin keunggulan cluster & fasilitas. Menggunakan foto rumah asli Anda tanpa modifikasi AI.
+          Semua detail tersimpan di tabel <strong>properties</strong> & <strong>property_media</strong> Supabase: <strong>Mezanine 1/2 lantai</strong>, <strong>LT 88 m²</strong>, <strong>Sewa: {priceFull}</strong> di <strong>Taman Jaya, Cipayung – Depok</strong>. Menggunakan foto rumah asli Anda yang tersimpan di bucket <strong>property-media</strong> tanpa modifikasi AI.
         </p>
       </div>
     </div>
