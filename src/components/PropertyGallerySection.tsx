@@ -162,40 +162,47 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
 
         {/* Action Controls & Navigation */}
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-          {/* Upload Button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files.length > 0 && onAddMediaFiles) {
-                onAddMediaFiles(e.target.files);
-                e.target.value = '';
-              }
-            }}
-          />
-          {/* Replace Media File Input */}
-          <input
-            ref={replaceFileInputRef}
-            type="file"
-            accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file && targetReplaceItem && onReplaceMedia) {
-                onReplaceMedia(targetReplaceItem, file);
-              }
-              setTargetReplaceItem(null);
-              e.target.value = '';
-            }}
-          />
+          {/* Upload and Replace Inputs - strictly for authenticated admin */}
+          {isAdmin && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0 && onAddMediaFiles) {
+                    onAddMediaFiles(e.target.files);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <input
+                ref={replaceFileInputRef}
+                type="file"
+                accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.mp4,.mov,.webm"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file && targetReplaceItem && onReplaceMedia) {
+                    onReplaceMedia(targetReplaceItem, file);
+                  }
+                  setTargetReplaceItem(null);
+                  e.target.value = '';
+                }}
+              />
+            </>
+          )}
           <button
             type="button"
             onClick={handleAddClick}
             disabled={isUploading}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 border ${
+              isAdmin
+                ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border-amber-500/30'
+                : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
+            }`}
             title={isAdmin ? 'Unggah foto atau video ke Supabase Storage' : 'Login Admin untuk mengunggah'}
           >
             {isUploading ? (
@@ -205,7 +212,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
             ) : (
               <Plus className="w-3.5 h-3.5" />
             )}
-            <span>{isUploading ? 'Mengunggah...' : 'Tambah Foto/Video'}</span>
+            <span>{isUploading ? 'Mengunggah...' : isAdmin ? 'Tambah Foto/Video' : 'Unggah Media (Admin)'}</span>
           </button>
 
           {/* Carousel Left / Right Scroll Buttons */}
@@ -448,17 +455,6 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                     <span>{item.type === 'video' ? 'Putar Video' : 'Lihat Ukuran Penuh'}</span>
                     <ChevronRight className="w-3 h-3" />
                   </button>
-
-                  {!isAdmin && item.isUploadedByUser && onRemoveMedia && (
-                    <button
-                      type="button"
-                      onClick={() => onRemoveMedia(item)}
-                      className="text-neutral-400 hover:text-rose-500 dark:text-neutral-500 dark:hover:text-rose-400 p-1 rounded transition cursor-pointer"
-                      title="Hapus media ini"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
@@ -496,39 +492,45 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
             </div>
 
             <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-800">
-              <input
-                ref={clusterInputRef}
-                type="file"
-                accept={
-                  nextSlot.defaultType === 'video'
-                    ? 'video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'
-                    : 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.heic,.heif,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'
-                }
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    if (onUploadNextSlot) {
-                      onUploadNextSlot(file, nextSlot);
-                    } else if (onUploadClusterPhoto) {
-                      onUploadClusterPhoto(file);
-                    }
-                    e.target.value = '';
+              {isAdmin && (
+                <input
+                  ref={clusterInputRef}
+                  type="file"
+                  accept={
+                    nextSlot.defaultType === 'video'
+                      ? 'video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'
+                      : 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.bmp,.heic,.heif,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'
                   }
-                }}
-              />
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (onUploadNextSlot) {
+                        onUploadNextSlot(file, nextSlot);
+                      } else if (onUploadClusterPhoto) {
+                        onUploadClusterPhoto(file);
+                      }
+                      e.target.value = '';
+                    }
+                  }}
+                />
+              )}
               <button
                 type="button"
                 onClick={handleNextSlotUploadClick}
                 disabled={isUploading}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition shadow-md cursor-pointer disabled:opacity-50"
+                className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition shadow-md cursor-pointer disabled:opacity-50 ${
+                  isAdmin
+                    ? 'bg-amber-500 hover:bg-amber-400 text-neutral-950'
+                    : 'bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700'
+                }`}
               >
                 {!isAdmin ? (
                   <Lock className="w-3.5 h-3.5" />
                 ) : (
                   <Upload className="w-3.5 h-3.5" />
                 )}
-                <span>{isAdmin ? nextSlot.buttonLabel : 'Login Admin untuk Upload'}</span>
+                <span>{isAdmin ? nextSlot.buttonLabel : 'Login Admin untuk Unggah'}</span>
               </button>
             </div>
           </div>

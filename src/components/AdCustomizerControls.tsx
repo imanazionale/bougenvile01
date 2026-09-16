@@ -4,7 +4,9 @@ import {
   Eye,
   Copy,
   Layout,
-  Palette,
+  Sun,
+  Moon,
+  Check,
   Layers,
   Columns2,
   Image as ImageIcon,
@@ -145,40 +147,51 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
             )}
           </div>
 
-          {/* Hidden inputs */}
-          <input
-            ref={exteriorInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onPhotoUpload('heroExterior', f);
-              e.target.value = '';
-            }}
-          />
-          <input
-            ref={mezzanineInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onPhotoUpload('mezzanineInterior', f);
-              e.target.value = '';
-            }}
-          />
-          <input
-            ref={clusterInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onPhotoUpload('clusterStreet', f);
-              e.target.value = '';
-            }}
-          />
+          {/* Hidden inputs - Only rendered when admin */}
+          {isAdmin && (
+            <>
+              <input
+                ref={exteriorInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onPhotoUpload('heroExterior', f);
+                  e.target.value = '';
+                }}
+              />
+              <input
+                ref={mezzanineInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onPhotoUpload('mezzanineInterior', f);
+                  e.target.value = '';
+                }}
+              />
+              <input
+                ref={clusterInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onPhotoUpload('clusterStreet', f);
+                  e.target.value = '';
+                }}
+              />
+            </>
+          )}
+
+          {!isAdmin && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-800 dark:text-amber-300">
+              <Lock className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+              <span>Hanya Admin terverifikasi yang dapat mengubah atau mengunggah foto properti.</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             {/* Tampak Depan Hero */}
@@ -207,10 +220,14 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
               <button
                 type="button"
                 onClick={() => handleTriggerUpload('exterior')}
-                className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center"
+                className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer transition text-center border ${
+                  isAdmin
+                    ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border-amber-500/30'
+                    : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
+                }`}
               >
                 {!isAdmin ? <Lock className="w-3 h-3 shrink-0" /> : <Upload className="w-3 h-3 shrink-0" />}
-                <span>{isAdmin ? 'Pilih Foto Fasad' : 'Pilih Foto Fasad'}</span>
+                <span>{isAdmin ? (photos.heroExterior ? 'Ganti Foto Fasad' : 'Pilih Foto Fasad') : 'Login Admin untuk Ubah'}</span>
               </button>
               <span className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center truncate">Fasad & Bangunan Asli</span>
             </div>
@@ -241,10 +258,14 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
               <button
                 type="button"
                 onClick={() => handleTriggerUpload('mezzanine')}
-                className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center"
+                className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer transition text-center border ${
+                  isAdmin
+                    ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border-amber-500/30'
+                    : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
+                }`}
               >
                 {!isAdmin ? <Lock className="w-3 h-3 shrink-0" /> : <Upload className="w-3 h-3 shrink-0" />}
-                <span>{isAdmin ? 'Pilih Foto Mezanine' : 'Pilih Foto Mezanine'}</span>
+                <span>{isAdmin ? (photos.mezzanineInterior ? 'Ganti Foto Mezanine' : 'Pilih Foto Mezanine') : 'Login Admin untuk Ubah'}</span>
               </button>
               <span className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center truncate">Tangga & Mezanine</span>
             </div>
@@ -279,57 +300,78 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
               <button
                 type="button"
                 onClick={() => handleTriggerUpload('cluster')}
-                className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[11px] font-bold cursor-pointer transition text-center"
+                className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer transition text-center border ${
+                  isAdmin
+                    ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border-amber-500/30'
+                    : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
+                }`}
               >
                 {!isAdmin ? <Lock className="w-3 h-3 shrink-0" /> : <Upload className="w-3 h-3 shrink-0" />}
-                <span>{photos.clusterStreet ? 'Ganti Foto Jalan' : 'Pilih Foto Jalan'}</span>
+                <span>{isAdmin ? (photos.clusterStreet ? 'Ganti Foto Jalan' : 'Pilih Foto Jalan') : 'Login Admin untuk Ubah'}</span>
               </button>
               <span className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center truncate">Lingkungan Jalan Cluster</span>
             </div>
           </div>
         </div>
 
-        {/* Color Theme Selector */}
+        {/* Global Theme Selector (Light Mode & Dark Mode) */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-bold text-neutral-800 dark:text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Palette className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-              <span>Pilihan Palet Warna Elegan</span>
+              <Sun className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+              <span>Tema Global Website & Desain</span>
             </label>
-            <span className="text-[11px] text-neutral-500">Nuansa hangat & premium</span>
+            <span className="text-[11px] text-neutral-500">2 Pilihan Tampilan</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {Object.values(COLOR_THEMES).map((theme) => {
-              const isActive = currentThemeId === theme.id;
-              return (
-                <button
-                  key={theme.id}
-                  type="button"
-                  onClick={() => onThemeChange(theme.id as ColorThemeId)}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-amber-500/10 border-amber-500/80 text-amber-900 dark:text-white font-bold shadow-xs'
-                      : 'bg-white dark:bg-neutral-950/60 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-200 shadow-xs dark:shadow-none'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full border border-black/10 dark:border-white/20 shrink-0 ${
-                      theme.id === 'warm-sand'
-                        ? 'bg-[#EFEAE1]'
-                        : theme.id === 'pearl-white'
-                        ? 'bg-[#FAF8F5]'
-                        : theme.id === 'serene-sage'
-                        ? 'bg-[#DFE9E1]'
-                        : 'bg-[#1F2024]'
-                    }`}
-                  />
-                  <div className="truncate text-xs font-semibold">
-                    {theme.name}
-                  </div>
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Light Mode Option */}
+            <button
+              type="button"
+              onClick={() => onThemeChange('light')}
+              className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                currentThemeId === 'light'
+                  ? 'bg-amber-500/15 border-amber-500 text-amber-950 dark:text-amber-200 font-bold shadow-xs ring-1 ring-amber-500/30'
+                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-700 hover:text-neutral-900 dark:hover:text-white shadow-xs dark:shadow-none'
+              }`}
+            >
+              <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0 shadow-xs">
+                <Sun className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold flex items-center justify-between">
+                  <span>Light Mode</span>
+                  {currentThemeId === 'light' && <Check className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
+                </div>
+                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
+                  Terang, bersih & hangat
+                </div>
+              </div>
+            </button>
+
+            {/* Dark Mode Option */}
+            <button
+              type="button"
+              onClick={() => onThemeChange('dark')}
+              className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                currentThemeId === 'dark'
+                  ? 'bg-amber-500/15 border-amber-500 text-amber-950 dark:text-amber-200 font-bold shadow-xs ring-1 ring-amber-500/30'
+                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-400 hover:border-neutral-300 dark:hover:border-neutral-700 hover:text-neutral-900 dark:hover:text-white shadow-xs dark:shadow-none'
+              }`}
+            >
+              <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-700 flex items-center justify-center text-amber-400 shrink-0 shadow-xs">
+                <Moon className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold flex items-center justify-between">
+                  <span>Dark Mode</span>
+                  {currentThemeId === 'dark' && <Check className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
+                </div>
+                <div className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
+                  Gelap, elegan & arsitektural
+                </div>
+              </div>
+            </button>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-export type ColorThemeId = 'warm-sand' | 'midnight-gold' | 'serene-sage' | 'pearl-white';
+export type ColorThemeId = 'light' | 'dark';
 
 export interface ColorTheme {
   id: ColorThemeId;

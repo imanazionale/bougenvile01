@@ -1,20 +1,23 @@
 import { createClient, User, Session } from '@supabase/supabase-js';
 import { MediaItem, PropertyData } from '../types';
 import { getSlotBadge, getSlotCategory } from './gallerySlots';
-import { compressImageFile, formatUploadErrorMessage, isImageFile } from './imageOptimizer';
+import { compressImageFile, formatUploadErrorMessage, isImageFile, isVideoFile, formatFileSize } from './imageOptimizer';
+import { compressVideoFile, MAX_INPUT_VIDEO_SIZE_BYTES } from './videoCompressor';
 
 /**
  * Supabase client configuration
  * Uses environment variables configured in AI Studio / Vite
  */
+const envObj = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : (process.env as any) || {};
+
 const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
+  envObj.VITE_SUPABASE_URL ||
+  envObj.NEXT_PUBLIC_SUPABASE_URL ||
   'https://eqjzljlfszumqvicrdgr.supabase.co';
 
 const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  envObj.VITE_SUPABASE_ANON_KEY ||
+  envObj.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   'sb_publishable_genKDJZtiwhDXxVnnq1DuQ_TO1uyEzm';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -227,26 +230,64 @@ export async function fetchPropertyMedia(propertyId?: number): Promise<MediaItem
       return [];
     }
 
-    const hasZeroOrder = data.some((r: any) => r.sort_order === 0);
-    const minOrder = data.reduce((min: number, r: any) => Math.min(min, r.sort_order ?? 0), 9999);
-    const isLegacyOneBased = !hasZeroOrder && minOrder === 1;
+    // 1. Sort items primarily by sort_order and secondarily by id
+    const sortedRows = [...data].sort((a, b) => {
+      const orderA = a.sort_order ?? 999;
+      const orderB = b.sort_order ?? 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.id ?? 0) - (b.id ?? 0);
+    });
 
-    return data.map((row: SupabasePropertyMediaRow, index: number) => {
+    // 2. Resolve duplicate #4: User requested the last #4 media (belakang) to become #2
+    const belakangIndex = sortedRows.findIndex(
+      (r) =>
+        r.id === 11 ||
+        (r.caption && r.caption.toLowerCase().includes('belakang')) ||
+        (r.file_path && r.file_path.toLowerCase().includes('belakang'))
+    );
+
+    if (belakangIndex > 1) {
+      const [belakangRow] = sortedRows.splice(belakangIndex, 1);
+      sortedRows.splice(1, 0, belakangRow);
+    }
+
+    // 3. Map to MediaItem ensuring STRICT UNIQUE sequential 0-based sort_order (0, 1, 2, 3, 4...)
+    // This permanently eliminates any duplicate numbers and aligns with the user's requested order:
+    // 1. Tampak Depan
+    // 2. Video Area Belakang (media #4 terakhir jadi no.2)
+    // 3. Area Mezanine
+    // 4. Lingkungan & Jalanan Cluster Asri
+    // 5. Video Walkthrough Hunian
+    return sortedRows.map((row: SupabasePropertyMediaRow, index: number) => {
       const publicUrl = getStoragePublicUrl(row.file_path);
       const isVideo = row.media_type === 'video';
-      const caption = row.caption || '';
-      const sortOrder = isLegacyOneBased ? (row.sort_order ?? index + 1) - 1 : (row.sort_order ?? index);
+      const rawCaption = (row.caption || '').trim();
+      const sortOrder = index; // Strict 0-based unique sequential index
 
-      const category = getSlotCategory(sortOrder, isVideo, caption);
+      const lowerCap = rawCaption.toLowerCase();
+      let cleanCaption = rawCaption;
+      if (lowerCap === 'belakang') {
+        cleanCaption = isVideo ? 'Video Area Belakang' : 'Area Belakang';
+      }
+
+      const category = getSlotCategory(sortOrder, isVideo, cleanCaption);
 
       let defaultTitle = isVideo ? 'Video Walkthrough Hunian' : 'Foto Dokumentasi Properti';
-      if (sortOrder === 0) defaultTitle = 'Tampak Depan Rumah & Carport';
-      else if (sortOrder === 1) defaultTitle = 'Area Mezanine 1/2 Lantai & Tangga';
-      else if (sortOrder === 2) defaultTitle = 'Lingkungan & Jalanan Cluster Asri';
-      else if (sortOrder === 3) defaultTitle = isVideo ? 'Video Walkthrough Hunian' : (caption || 'Dokumentasi Properti #4');
-      else defaultTitle = caption || `Dokumentasi Properti #${sortOrder + 1}`;
+      if (sortOrder === 0 || lowerCap.includes('depan')) {
+        defaultTitle = 'Tampak Depan Rumah & Carport';
+      } else if (lowerCap.includes('belakang') || row.id === 11) {
+        defaultTitle = isVideo ? 'Video Area Belakang' : 'Area Belakang Hunian';
+      } else if (lowerCap.includes('mezanine')) {
+        defaultTitle = 'Area Mezanine 1/2 Lantai & Tangga';
+      } else if (lowerCap.includes('cluster') || lowerCap.includes('jalan')) {
+        defaultTitle = 'Lingkungan & Jalanan Cluster Asri';
+      } else if (lowerCap.includes('walkthrough') || isVideo) {
+        defaultTitle = 'Video Walkthrough Hunian';
+      } else {
+        defaultTitle = cleanCaption || `Dokumentasi Properti #${sortOrder + 1}`;
+      }
 
-      const badge = getSlotBadge(sortOrder, caption, isVideo);
+      const badge = getSlotBadge(sortOrder, cleanCaption, isVideo);
 
       return {
         id: String(row.id),
@@ -255,13 +296,18 @@ export async function fetchPropertyMedia(propertyId?: number): Promise<MediaItem
         file_path: row.file_path,
         type: row.media_type,
         url: publicUrl,
-        title: caption || defaultTitle,
+        title: cleanCaption && cleanCaption !== 'belakang' ? cleanCaption : defaultTitle,
         category,
         badge,
         description:
-          caption ||
-          (isVideo ? 'Video dokumentasi asli hunian cluster.' : 'Foto dokumentasi asli properti.'),
-        caption: caption,
+          cleanCaption && cleanCaption !== 'belakang'
+            ? cleanCaption
+            : lowerCap.includes('belakang') || row.id === 11
+            ? 'Video dokumentasi asli area belakang hunian.'
+            : isVideo
+            ? 'Video dokumentasi asli hunian cluster.'
+            : 'Foto dokumentasi asli properti.',
+        caption: cleanCaption,
         sort_order: sortOrder,
         isUploadedByUser: true,
       };
@@ -319,7 +365,8 @@ export async function uploadMediaFile(
   providedPropertyId?: number,
   sortOrder: number = 1,
   caption?: string,
-  fallbackPropertyData?: Partial<SupabasePropertyRow>
+  fallbackPropertyData?: Partial<SupabasePropertyRow>,
+  onProgress?: (statusText: string) => void
 ): Promise<{ item: MediaItem | null; error: Error | null; actualPropertyId?: number }> {
   try {
     // 1. Ensure the property record exists and resolve the real database properties.id
@@ -343,18 +390,47 @@ export async function uploadMediaFile(
       realPropertyId = propertyRow.id;
     }
 
-    // Auto-compress high-resolution images client-side to prevent "exceeded maximum allowed size" errors
+    // Process file (image compression or video compression with FFmpeg.wasm)
     let uploadFile = file;
     if (isImageFile(file)) {
+      onProgress?.(`Mengompresi gambar (${formatFileSize(file.size)})...`);
       try {
         uploadFile = await compressImageFile(file);
       } catch (cErr) {
         console.warn('Image auto-compression skipped, using original file:', cErr);
       }
+    } else if (isVideoFile(file)) {
+      // Input videos up to 300MB are accepted
+      if (file.size > MAX_INPUT_VIDEO_SIZE_BYTES) {
+        throw new Error(
+          `Ukuran video input (${formatFileSize(file.size)}) melebihi batas maksimal 300MB. Silakan pilih video hingga 300MB.`
+        );
+      }
+
+      // Automatically compress with FFmpeg.wasm targeting <50MB (ideal 40–45MB)
+      try {
+        uploadFile = await compressVideoFile(file, {
+          onProgress: (_pct, statusText) => {
+            onProgress?.(statusText);
+          },
+        });
+      } catch (vErr: any) {
+        console.error('Video compression error in uploadMediaFile:', vErr);
+        throw vErr;
+      }
+
+      // The 50MB limit applies only to the final compressed file uploaded to Supabase
+      if (uploadFile.size > 50 * 1024 * 1024) {
+        throw new Error(
+          `Ukuran video hasil kompresi (${formatFileSize(uploadFile.size)}) melebihi batas 50MB Supabase Storage. Silakan potong durasi video.`
+        );
+      }
     }
 
     const { isVideo, contentType, fileName } = resolveMediaInfo(uploadFile);
     const filePath = `properties/${realPropertyId}/${fileName}`;
+
+    onProgress?.(`Mengunggah ${isVideo ? 'video terkompresi' : 'berkas'} (${formatFileSize(uploadFile.size)}) ke Supabase Storage...`);
 
     // 2. Upload file to Supabase Storage bucket "property-media"
     const { error: uploadErr } = await supabase.storage
@@ -510,7 +586,8 @@ export async function replaceMediaFile(
   mediaId: number,
   newFile: File,
   oldFilePath?: string,
-  providedPropertyId?: number
+  providedPropertyId?: number,
+  onProgress?: (statusText: string) => void
 ): Promise<{ item: MediaItem | null; error: Error | null }> {
   try {
     // 1. Fetch current row to verify existence and get real property_id and current metadata
@@ -526,18 +603,44 @@ export async function replaceMediaFile(
 
     const realPropertyId = existingRow.property_id || providedPropertyId || 1;
 
-    // Auto-compress high-resolution images client-side to prevent "exceeded maximum allowed size" errors
+    // Process file (image compression or video compression with FFmpeg.wasm)
     let uploadFile = newFile;
     if (isImageFile(newFile)) {
+      onProgress?.(`Mengompresi gambar pengganti (${formatFileSize(newFile.size)})...`);
       try {
         uploadFile = await compressImageFile(newFile);
       } catch (cErr) {
         console.warn('Image auto-compression skipped in replaceMediaFile:', cErr);
       }
+    } else if (isVideoFile(newFile)) {
+      if (newFile.size > MAX_INPUT_VIDEO_SIZE_BYTES) {
+        throw new Error(
+          `Ukuran video input (${formatFileSize(newFile.size)}) melebihi batas maksimal 300MB. Silakan pilih video hingga 300MB.`
+        );
+      }
+
+      try {
+        uploadFile = await compressVideoFile(newFile, {
+          onProgress: (_pct, statusText) => {
+            onProgress?.(statusText);
+          },
+        });
+      } catch (vErr: any) {
+        console.error('Video compression failed in replaceMediaFile:', vErr);
+        throw vErr;
+      }
+
+      if (uploadFile.size > 50 * 1024 * 1024) {
+        throw new Error(
+          `Ukuran video hasil kompresi (${formatFileSize(uploadFile.size)}) melebihi batas 50MB Supabase Storage. Silakan potong durasi video.`
+        );
+      }
     }
 
     const { isVideo, contentType, fileName } = resolveMediaInfo(uploadFile);
     const newFilePath = `properties/${realPropertyId}/${fileName}`;
+
+    onProgress?.(`Mengunggah file pengganti (${formatFileSize(uploadFile.size)}) ke Supabase Storage...`);
 
     // 2. Upload new file to Supabase Storage
     const { error: uploadErr } = await supabase.storage

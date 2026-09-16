@@ -199,9 +199,9 @@ export function formatUploadErrorMessage(err: any, file?: File): string {
   ) {
     const fileSizeStr = file ? ` (${formatFileSize(file.size)})` : '';
     if (file && isVideoFile(file)) {
-      return `Ukuran video${fileSizeStr} melebihi batas kapasitas Supabase Storage. Silakan potong durasi video atau kompres resolusinya ke 720p/1080p sebelum mengunggah.`;
+      return `Ukuran video terkompresi${fileSizeStr} masih melebihi batas 50MB Supabase Storage. Silakan potong durasi video sebelum mengunggah.`;
     }
-    return `Ukuran berkas${fileSizeStr} melebihi batas kapasitas Supabase Storage. Sistem telah mengompresi gambar, namun kapasitas bucket penyimpanan Supabase memiliki batas maksimal.`;
+    return `Ukuran berkas${fileSizeStr} melebihi batas kapasitas Supabase Storage (50MB).`;
   }
 
   if (

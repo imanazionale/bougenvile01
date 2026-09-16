@@ -1,133 +1,78 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type ThemePreference = 'auto' | 'light' | 'dark';
-export type TimePhase = 'pagi' | 'siang' | 'sore' | 'malam';
+export type GlobalTheme = 'light' | 'dark';
+export type ThemePreference = GlobalTheme; // Backwards compatibility
 
 interface ThemeContextType {
-  themePreference: ThemePreference;
-  setThemePreference: (pref: ThemePreference) => void;
+  theme: GlobalTheme;
+  setTheme: (theme: GlobalTheme) => void;
+  toggleTheme: () => void;
   isDark: boolean;
-  timePhase: TimePhase;
-  timePhaseLabel: string;
-  formattedTime: string;
-  isDaytime: boolean;
-  autoModeSummary: string;
+  themePreference: GlobalTheme;
+  setThemePreference: (theme: GlobalTheme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'property_theme_preference';
-
-/**
- * Checks if current time is within Pagi - Sore (06:00 - 18:00)
- * Pagi - Sore: Terang (Light mode)
- * Malam: Gelap (Dark mode)
- */
-export function isDaytimeHour(hour: number): boolean {
-  return hour >= 6 && hour < 18;
-}
-
-export function getTimePhase(hour: number): TimePhase {
-  if (hour >= 6 && hour < 11) return 'pagi';
-  if (hour >= 11 && hour < 15) return 'siang';
-  if (hour >= 15 && hour < 18) return 'sore';
-  return 'malam';
-}
-
-export function getTimePhaseLabel(phase: TimePhase): string {
-  switch (phase) {
-    case 'pagi':
-      return 'Pagi (06:00 - 11:00)';
-    case 'siang':
-      return 'Siang (11:00 - 15:00)';
-    case 'sore':
-      return 'Sore (15:00 - 18:00)';
-    case 'malam':
-      return 'Malam (18:00 - 06:00)';
-  }
-}
+const STORAGE_KEY = 'property_theme_choice';
+const LEGACY_STORAGE_KEY = 'property_theme_preference';
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Read stored preference or default to 'auto' (Sesuai Jam)
-  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => {
+  // Read stored preference, defaulting to 'light' (Light Mode)
+  const [theme, setThemeState] = useState<GlobalTheme>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === 'light' || stored === 'dark' || stored === 'auto') {
-        return stored;
+      const stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (stored === 'dark') {
+        return 'dark';
+      }
+      if (stored === 'light') {
+        return 'light';
       }
     } catch {
       // Fallback if localStorage is inaccessible
     }
-    return 'auto';
+    return 'light'; // Default theme: Light Mode
   });
 
-  const [currentDate, setCurrentDate] = useState(() => new Date());
+  const isDark = theme === 'dark';
 
-  // Periodically update time every 15 seconds to ensure live auto-switch across hour boundaries
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 15000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const hour = currentDate.getHours();
-  const minutes = currentDate.getMinutes();
-  const formattedTime = useMemo(() => {
-    const h = String(hour).padStart(2, '0');
-    const m = String(minutes).padStart(2, '0');
-    return `${h}:${m}`;
-  }, [hour, minutes]);
-
-  const isDaytime = isDaytimeHour(hour);
-  const timePhase = getTimePhase(hour);
-  const timePhaseLabel = getTimePhaseLabel(timePhase);
-
-  // Resolved isDark
-  const isDark = useMemo(() => {
-    if (themePreference === 'light') return false;
-    if (themePreference === 'dark') return true;
-    // Auto: Daytime (Pagi - Sore) is Light (isDark = false), Night (Malam) is Dark (isDark = true)
-    return !isDaytime;
-  }, [themePreference, isDaytime]);
-
-  const autoModeSummary = useMemo(() => {
-    if (isDaytime) {
-      return `Pagi–Sore (${formattedTime}) → Terang`;
-    }
-    return `Malam (${formattedTime}) → Gelap`;
-  }, [isDaytime, formattedTime]);
-
-  const setThemePreference = (pref: ThemePreference) => {
-    setThemePreferenceState(pref);
+  const setTheme = (newTheme: GlobalTheme) => {
+    setThemeState(newTheme);
     try {
-      localStorage.setItem(STORAGE_KEY, pref);
+      localStorage.setItem(STORAGE_KEY, newTheme);
+      localStorage.setItem(LEGACY_STORAGE_KEY, newTheme);
     } catch {
       // Ignore storage errors
     }
   };
 
-  // Synchronize 'dark' class on HTML document root for CSS & Tailwind
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
+  // Synchronize 'dark' class, data-theme attribute, and colorScheme on HTML document root
   useEffect(() => {
     const root = document.documentElement;
-    if (isDark) {
+    if (theme === 'dark') {
       root.classList.add('dark');
+      root.classList.remove('light');
+      root.setAttribute('data-theme', 'dark');
       root.style.colorScheme = 'dark';
     } else {
       root.classList.remove('dark');
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'light');
       root.style.colorScheme = 'light';
     }
-  }, [isDark]);
+  }, [theme]);
 
-  const value = {
-    themePreference,
-    setThemePreference,
+  const value: ThemeContextType = {
+    theme,
+    setTheme,
+    toggleTheme,
     isDark,
-    timePhase,
-    timePhaseLabel,
-    formattedTime,
-    isDaytime,
-    autoModeSummary,
+    themePreference: theme,
+    setThemePreference: setTheme,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

@@ -27,6 +27,7 @@ interface AdPosterProps {
   showGuides?: boolean;
   onPhotoUpload?: (type: 'heroExterior' | 'mezzanineInterior', file: File) => void;
   isInteractive?: boolean;
+  isAdmin?: boolean;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -39,7 +40,10 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
-  ({ data, theme, photoLayout, photos, scale = 1, showGuides = false, onPhotoUpload, isInteractive = false }, ref) => {
+  ({ data, theme, photoLayout, photos, scale = 1, showGuides = false, onPhotoUpload, isInteractive = false, isAdmin = false }, ref) => {
+    // Only authenticated admin in interactive mode can edit media
+    const canEditMedia = Boolean(isAdmin && isInteractive && onPhotoUpload);
+
     // Primary real photos uploaded by user with graceful fallback
     const [exteriorSrc, setExteriorSrc] = useState<string>(
       photos?.heroExterior || '/20260905_131958.jpg'
@@ -71,6 +75,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
     const handleDrop = (e: React.DragEvent, type: 'heroExterior' | 'mezzanineInterior') => {
       e.preventDefault();
       e.stopPropagation();
+      if (!canEditMedia) return;
       try {
         const file = e.dataTransfer.files?.[0];
         if (file && onPhotoUpload) {
@@ -95,8 +100,8 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.06)',
         }}
       >
-        {/* Hidden File Inputs for Interactive Mode (Always available in all layouts) */}
-        {isInteractive && onPhotoUpload && (
+        {/* Hidden File Inputs for Interactive Mode - strictly authenticated admin only */}
+        {canEditMedia && (
           <>
             <input
               ref={exteriorInputRef}
@@ -105,7 +110,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) onPhotoUpload('heroExterior', file);
+                if (file && onPhotoUpload) onPhotoUpload('heroExterior', file);
                 e.target.value = '';
               }}
             />
@@ -116,7 +121,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) onPhotoUpload('mezzanineInterior', file);
+                if (file && onPhotoUpload) onPhotoUpload('mezzanineInterior', file);
                 e.target.value = '';
               }}
             />
@@ -205,7 +210,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
                 )}
 
                 {/* Interactive upload overlay for Hero Image */}
-                {isInteractive && onPhotoUpload && (
+                {canEditMedia && (
                   <div
                     onDrop={(e) => handleDrop(e, 'heroExterior')}
                     onDragOver={handleDragOver}
@@ -242,7 +247,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
                   )}
                   
                   {/* Interactive upload overlay for Mezzanine Inset */}
-                  {isInteractive && onPhotoUpload && (
+                  {canEditMedia && (
                     <div
                       onDrop={(e) => handleDrop(e, 'mezzanineInterior')}
                       onDragOver={handleDragOver}
@@ -294,7 +299,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
                       <span className="text-[8px] text-neutral-500">Tampak Depan</span>
                     </div>
                   )}
-                  {isInteractive && onPhotoUpload && (
+                  {canEditMedia && (
                     <div
                       onDrop={(e) => handleDrop(e, 'heroExterior')}
                       onDragOver={handleDragOver}
@@ -328,7 +333,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
                       <span className="text-[8px] text-neutral-500">Area Mezanine</span>
                     </div>
                   )}
-                  {isInteractive && onPhotoUpload && (
+                  {canEditMedia && (
                     <div
                       onDrop={(e) => handleDrop(e, 'mezzanineInterior')}
                       onDragOver={handleDragOver}
@@ -366,7 +371,7 @@ export const AdPoster = forwardRef<HTMLDivElement, AdPosterProps>(
                     <span className="text-[10px] text-neutral-500 mt-0.5">Tampak Depan Rumah</span>
                   </div>
                 )}
-                {isInteractive && onPhotoUpload && (
+                {canEditMedia && (
                   <div
                     onDrop={(e) => handleDrop(e, 'heroExterior')}
                     onDragOver={handleDragOver}

@@ -45,7 +45,8 @@ import {
 } from './lib/supabase';
 
 export default function App() {
-  const [currentThemeId, setCurrentThemeId] = useState<ColorThemeId>('warm-sand');
+  const { theme, setTheme } = useTheme();
+  const currentThemeId: ColorThemeId = theme;
   const [photoLayout, setPhotoLayout] = useState<PhotoLayout>('hybrid-inset');
   const [showGuides, setShowGuides] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -183,37 +184,48 @@ export default function App() {
           if (supabaseMedia && supabaseMedia.length > 0) {
             setMediaItems(supabaseMedia);
 
-            // Find primary photos from Supabase media list (0-based sort_order)
+            // Find primary photos for poster showcase cards (photo types only)
             const exteriorItem =
-              supabaseMedia.find((m) => m.sort_order === 0) ||
               supabaseMedia.find(
                 (m) =>
-                  m.sort_order === 1 ||
-                  m.category === 'exterior' ||
-                  (m.caption && m.caption.toLowerCase().includes('depan'))
-              );
+                  m.type === 'photo' &&
+                  (m.sort_order === 0 ||
+                    m.category === 'exterior' ||
+                    (m.caption && m.caption.toLowerCase().includes('depan')))
+              ) || supabaseMedia.find((m) => m.type === 'photo');
+
             const mezzanineItem =
-              supabaseMedia.find((m) => m.sort_order === 1) ||
               supabaseMedia.find(
                 (m) =>
-                  m.sort_order === 2 ||
-                  m.category === 'mezzanine' ||
-                  (m.caption && m.caption.toLowerCase().includes('mezanine'))
-              );
+                  m.type === 'photo' &&
+                  (m.category === 'mezzanine' ||
+                    (m.caption && m.caption.toLowerCase().includes('mezanine')))
+              ) || supabaseMedia.find((m) => m.type === 'photo' && m.sort_order === 2);
+
             const clusterItem =
-              supabaseMedia.find((m) => m.sort_order === 2) ||
               supabaseMedia.find(
                 (m) =>
-                  m.sort_order === 3 ||
-                  m.category === 'cluster' ||
-                  (m.caption &&
-                    (m.caption.toLowerCase().includes('cluster') || m.caption.toLowerCase().includes('jalan')))
-              );
+                  m.type === 'photo' &&
+                  (m.category === 'cluster' ||
+                    (m.caption &&
+                      (m.caption.toLowerCase().includes('cluster') ||
+                        m.caption.toLowerCase().includes('jalan'))))
+              ) || supabaseMedia.find((m) => m.type === 'photo' && m.sort_order === 3);
 
             setPhotos({
               heroExterior: exteriorItem?.url || undefined,
               mezzanineInterior: mezzanineItem?.url || undefined,
               clusterStreet: clusterItem?.url || undefined,
+            });
+
+            // If an admin user session is active, silently sync the verified sort_order back to Supabase
+            supabase.auth.getSession().then(({ data: sessData }) => {
+              if (sessData?.session?.user && supabaseMedia.length > 0) {
+                const dbPayload = supabaseMedia
+                  .filter((m) => m.supabaseId)
+                  .map((m, idx) => ({ id: m.supabaseId!, sort_order: idx + 1 }));
+                reorderMediaItems(dbPayload).catch(() => {});
+              }
             });
           } else {
             // When all media are deleted, start fresh with no records
@@ -302,7 +314,8 @@ export default function App() {
           land_area: propertyData.land_area_numeric || 88,
           price: propertyData.price_numeric || 2300000,
           description: propertyData.description,
-        }
+        },
+        (statusText) => setUploadProgressText(statusText)
       );
 
       if (error || !item) {
@@ -405,7 +418,8 @@ export default function App() {
           land_area: propertyData.land_area_numeric || 88,
           price: propertyData.price_numeric || 2300000,
           description: propertyData.description,
-        }
+        },
+        (statusText) => setUploadProgressText(statusText)
       );
 
       if (error || !item) {
@@ -508,7 +522,12 @@ export default function App() {
           continue;
         }
 
-        setUploadProgressText(`Mengunggah file ${i + 1} dari ${total}: ${file.name}...`);
+        if (isKnownVideo && file.size > 300 * 1024 * 1024) {
+          uploadErrors.push(`"${file.name}": ukuran video input (${formatFileSize(file.size)}) melebihi batas maksimal 300MB`);
+          continue;
+        }
+
+        setUploadProgressText(`Memproses berkas ${i + 1} dari ${total}: ${file.name}...`);
 
         // Dynamically determine the next gallery slot based on existing records + items queued in this batch
         const targetSlot = getNextGallerySlot([...mediaItems, ...newItems]);
@@ -536,7 +555,8 @@ export default function App() {
             land_area: propertyData.land_area_numeric || 88,
             price: propertyData.price_numeric || 2300000,
             description: propertyData.description,
-          }
+          },
+          (statusText) => setUploadProgressText(`[${i + 1}/${total}] ${statusText}`)
         );
 
         if (error) {
@@ -662,15 +682,15 @@ export default function App() {
 
     setMediaItems(reordered);
 
-    // Sync showcase photos to match the new slot 0, 1, and 2
-    const ext = reordered.find((m) => m.sort_order === 0);
-    const mez = reordered.find((m) => m.sort_order === 1);
-    const clu = reordered.find((m) => m.sort_order === 2);
-    setPhotos({
-      heroExterior: ext?.url,
-      mezzanineInterior: mez?.url,
-      clusterStreet: clu?.url,
-    });
+    // Sync showcase photos to match the new slot orders (photo items only)
+    const ext = reordered.find((m) => m.type === 'photo' && (m.sort_order === 0 || m.category === 'exterior'));
+    const mez = reordered.find((m) => m.type === 'photo' && (m.category === 'mezzanine' || (m.caption && m.caption.toLowerCase().includes('mezanine'))));
+    const clu = reordered.find((m) => m.type === 'photo' && (m.category === 'cluster' || (m.caption && (m.caption.toLowerCase().includes('cluster') || m.caption.toLowerCase().includes('jalan')))));
+    setPhotos((prev) => ({
+      heroExterior: ext?.url || prev.heroExterior,
+      mezzanineInterior: mez?.url || prev.mezzanineInterior,
+      clusterStreet: clu?.url || prev.clusterStreet,
+    }));
 
     // Persist new sort_order to Supabase
     const dbPayload = reordered
@@ -724,7 +744,8 @@ export default function App() {
           targetItem.supabaseId,
           newFile,
           targetItem.file_path,
-          targetItem.property_id || propertyData.id
+          targetItem.property_id || propertyData.id,
+          (statusText) => setUploadProgressText(statusText)
         );
         if (error || !item) {
           throw error || new Error('Gagal mengganti file media di Supabase.');
@@ -744,7 +765,9 @@ export default function App() {
           newFile,
           propRecord.id,
           targetItem.sort_order ?? 0,
-          targetItem.caption || targetItem.title
+          targetItem.caption || targetItem.title,
+          undefined,
+          (statusText) => setUploadProgressText(statusText)
         );
         if (error || !item) {
           throw error || new Error('Gagal mengunggah file pengganti ke Supabase.');
@@ -983,6 +1006,7 @@ export default function App() {
                 showGuides={showGuides}
                 onPhotoUpload={(type, file) => handlePhotoUpload(type, file)}
                 isInteractive={true}
+                isAdmin={!!adminUser}
               />
             </div>
 

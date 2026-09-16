@@ -120,70 +120,46 @@ export function getNextGallerySlot(
 
 /**
  * Format badge for a given sort_order (0-indexed) and caption
- * - sort_order 0 -> 1. Tampak Depan
- * - sort_order 1 -> 2. Area Mezanine
- * - sort_order 2 -> 3. Lingkungan & Jalanan Cluster Asri
- * - sort_order 3 -> 4. Video Walkthrough (if video) or 4. <caption/Foto>
- * - sort_order N -> (N+1). <caption/Foto/Video>
+ * - Automatically detects keywords in caption (depan, belakang, mezanine, cluster/jalan, walkthrough)
+ * - Guarantees sequential 1-based numbering: 1., 2., 3., 4., 5...
+ * - Handles custom captions with clean Title Casing
  */
 export function getSlotBadge(sortOrder: number, caption?: string, isVideo?: boolean): string {
   const displayIndex = sortOrder + 1;
   const cleanCaption = caption?.trim();
 
-  // 1st media: sort_order 0
-  if (sortOrder === 0) {
-    if (
-      cleanCaption &&
-      cleanCaption !== 'Tampak Depan Rumah & Carport' &&
-      !cleanCaption.toLowerCase().includes('tampak depan')
-    ) {
-      return `1. ${cleanCaption}`;
+  if (cleanCaption) {
+    const lower = cleanCaption.toLowerCase();
+    if (lower.includes('depan')) {
+      return `${displayIndex}. Tampak Depan`;
     }
-    return '1. Tampak Depan';
+    if (lower.includes('belakang')) {
+      return `${displayIndex}. ${isVideo ? 'Video Area Belakang' : 'Area Belakang'}`;
+    }
+    if (lower.includes('mezanine')) {
+      return `${displayIndex}. Area Mezanine`;
+    }
+    if (lower.includes('cluster') || lower.includes('jalan')) {
+      return `${displayIndex}. Lingkungan & Jalanan Cluster Asri`;
+    }
+    if (lower.includes('walkthrough')) {
+      return `${displayIndex}. Video Walkthrough`;
+    }
+    // Capitalize first letter of custom caption
+    const formatted = cleanCaption.charAt(0).toUpperCase() + cleanCaption.slice(1);
+    return `${displayIndex}. ${formatted}`;
   }
 
-  // 2nd media: sort_order 1
-  if (sortOrder === 1) {
-    if (
-      cleanCaption &&
-      cleanCaption !== 'Area Mezanine 1/2 Lantai & Tangga' &&
-      !cleanCaption.toLowerCase().includes('area mezanine')
-    ) {
-      return `2. ${cleanCaption}`;
-    }
-    return '2. Area Mezanine';
-  }
-
-  // 3rd media: sort_order 2
-  if (sortOrder === 2) {
-    if (
-      cleanCaption &&
-      cleanCaption !== 'Lingkungan & Jalanan Cluster Asri' &&
-      !cleanCaption.toLowerCase().includes('jalanan cluster') &&
-      !cleanCaption.toLowerCase().includes('cluster asri')
-    ) {
-      return `3. ${cleanCaption}`;
-    }
-    return '3. Lingkungan & Jalanan Cluster Asri';
-  }
-
-  // 4th media: sort_order 3
-  if (sortOrder === 3) {
-    if (isVideo || (cleanCaption && cleanCaption.toLowerCase().includes('walkthrough'))) {
-      return '4. Video Walkthrough';
-    }
-    if (cleanCaption && cleanCaption !== 'Video Walkthrough Hunian' && cleanCaption !== 'Dokumentasi Properti #4') {
-      return `4. ${cleanCaption}`;
-    }
-    return '4. Video Walkthrough';
-  }
-
-  // Dynamic additional media (sort_order >= 4)
-  return `${displayIndex}. ${cleanCaption || (isVideo ? 'Video' : 'Foto')}`;
+  // Fallbacks if no caption provided
+  if (sortOrder === 0) return `${displayIndex}. Tampak Depan`;
+  if (sortOrder === 1) return `${displayIndex}. ${isVideo ? 'Video Dokumentasi' : 'Area Mezanine'}`;
+  if (sortOrder === 2) return `${displayIndex}. Lingkungan & Jalanan Cluster Asri`;
+  if (isVideo) return `${displayIndex}. Video Walkthrough`;
+  return `${displayIndex}. Foto Properti`;
 }
 
 /**
- * Determine category from sort_order and media type
+ * Determine category from sort_order, media type, and caption
  */
 export function getSlotCategory(
   sortOrder: number,
@@ -191,17 +167,14 @@ export function getSlotCategory(
   caption?: string
 ): MediaItem['category'] {
   if (isVideo) return 'walkthrough';
-  if (sortOrder === 0 || (caption && caption.toLowerCase().includes('depan'))) return 'exterior';
-  if (sortOrder === 1 || (caption && caption.toLowerCase().includes('mezanine'))) return 'mezzanine';
-  if (
-    sortOrder === 2 ||
-    (caption && (caption.toLowerCase().includes('jalan') || caption.toLowerCase().includes('cluster')))
-  ) {
-    return 'cluster';
-  }
-  if (caption && caption.toLowerCase().includes('walkthrough')) {
-    return 'walkthrough';
-  }
+  const lower = caption?.toLowerCase() || '';
+  if (lower.includes('depan') || sortOrder === 0) return 'exterior';
+  if (lower.includes('mezanine')) return 'mezzanine';
+  if (lower.includes('jalan') || lower.includes('cluster')) return 'cluster';
+  if (lower.includes('walkthrough')) return 'walkthrough';
+  if (lower.includes('belakang')) return 'interior';
+  if (sortOrder === 1) return 'mezzanine';
+  if (sortOrder === 2) return 'cluster';
   return 'interior';
 }
 
