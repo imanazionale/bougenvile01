@@ -117,19 +117,19 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-[#16181D] border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg bg-white dark:bg-[#16181D] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/80 bg-neutral-900/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800/80 bg-neutral-50 dark:bg-neutral-900/60">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <Building className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white tracking-wide">
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white tracking-wide">
                 Edit Informasi Properti
               </h3>
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 Tersimpan Permanen di Tabel Supabase "properties"
               </p>
             </div>
@@ -137,7 +137,7 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
+            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -146,21 +146,21 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5">
+            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2.5">
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{successMsg}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
               Judul / Headline Utama
             </label>
             <input
@@ -169,13 +169,13 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Contoh: RUMAH DIKONTRAKKAN"
-              className="w-full px-3 py-2 text-xs bg-neutral-900 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
+              className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span>Lokasi Properti</span>
             </label>
             <input
@@ -184,14 +184,14 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Contoh: Taman Jaya, Cipayung – Depok"
-              className="w-full px-3 py-2 text-xs bg-neutral-900 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
+              className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1 flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 <span>Harga Sewa (Rupiah/bulan)</span>
               </label>
               <input
@@ -202,16 +202,16 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="2300000"
-                className="w-full px-3 py-2 text-xs bg-neutral-900 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
               />
-              <span className="text-[10px] text-neutral-400 mt-0.5 block">
+              <span className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 block">
                 {price ? `Rp ${(Number(price) / 1000000).toFixed(1)} Juta / bulan` : ''}
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1 flex items-center gap-1.5">
-                <Maximize2 className="w-3.5 h-3.5 text-emerald-400" />
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1.5">
+                <Maximize2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Luas Tanah (m²)</span>
               </label>
               <input
@@ -222,17 +222,17 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
                 value={landArea}
                 onChange={(e) => setLandArea(e.target.value)}
                 placeholder="88"
-                className="w-full px-3 py-2 text-xs bg-neutral-900 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
+                className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
               />
-              <span className="text-[10px] text-neutral-400 mt-0.5 block">
+              <span className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 block">
                 {landArea ? `LT ${landArea} m²` : ''}
               </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-neutral-300 mb-1 flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-amber-400" />
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span>Deskripsi / Tagline Properti</span>
             </label>
             <textarea
@@ -241,7 +241,7 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Deskripsi hunian, keunggulan cluster islami, fasilitas, dll."
-              className="w-full px-3 py-2 text-xs bg-neutral-900 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition resize-none"
+              className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition resize-none"
             />
           </div>
 
@@ -249,7 +249,7 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded-xl bg-neutral-900 hover:bg-neutral-800 transition cursor-pointer"
+              className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition cursor-pointer"
             >
               Batal
             </button>

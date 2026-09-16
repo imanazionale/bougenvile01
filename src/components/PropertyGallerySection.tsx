@@ -132,30 +132,30 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
   };
 
   return (
-    <section className="mt-10 sm:mt-12 pt-8 border-t border-neutral-800/80">
+    <section className="mt-10 sm:mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-800/80">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className="text-xs uppercase font-extrabold tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-0.5 rounded-full">
+            <span className="text-xs uppercase font-extrabold tracking-wider text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-0.5 rounded-full">
               Koleksi Media Asli
             </span>
-            <span className="text-xs font-mono font-bold text-neutral-400 bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-mono font-bold text-neutral-700 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-2 py-0.5 rounded-md">
               Total {mediaList.length} Media
             </span>
             {isAdmin && (
-              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
                 Admin Mode Aktif
               </span>
             )}
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
             <span>GALERI RUMAH</span>
-            <span className="text-xs text-neutral-400 font-normal hidden md:inline">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-normal hidden md:inline">
               (Tampak Depan, Mezanine, Ruangan & Video Walkthrough)
             </span>
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-2xl">
             Jelajahi dokumentasi nyata hunian tanpa manipulasi AI. Klik thumbnail untuk membuka pratinjau resolusi penuh atau memutar video walkthrough.
           </p>
         </div>
@@ -195,13 +195,13 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
             type="button"
             onClick={handleAddClick}
             disabled={isUploading}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50"
             title={isAdmin ? 'Unggah foto atau video ke Supabase Storage' : 'Login Admin untuk mengunggah'}
           >
             {isUploading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             ) : !isAdmin ? (
-              <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             ) : (
               <Plus className="w-3.5 h-3.5" />
             )}
@@ -209,11 +209,11 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           </button>
 
           {/* Carousel Left / Right Scroll Buttons */}
-          <div className="flex items-center gap-1 bg-neutral-900 p-1 rounded-xl border border-neutral-800">
+          <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs dark:shadow-none">
             <button
               type="button"
               onClick={() => scroll('left')}
-              className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-300 hover:text-white transition cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition cursor-pointer"
               title="Geser ke Kiri"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -221,7 +221,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
             <button
               type="button"
               onClick={() => scroll('right')}
-              className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-300 hover:text-white transition cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition cursor-pointer"
               title="Geser ke Kanan"
             >
               <ChevronRight className="w-4 h-4" />
@@ -232,8 +232,8 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
 
       {/* Uploading indicator alert if active */}
       {isUploading && (
-        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-3 animate-pulse">
-          <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-amber-400" />
+        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-3 animate-pulse">
+          <RefreshCw className="w-4 h-4 animate-spin shrink-0 text-amber-500 dark:text-amber-400" />
           <span>{uploadProgressText}</span>
         </div>
       )}
@@ -246,7 +246,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer shrink-0 ${
             activeFilter === 'all'
               ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
-              : 'bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-800'
+              : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-800 shadow-xs dark:shadow-none'
           }`}
         >
           Semua ({mediaList.length})
@@ -257,7 +257,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
             activeFilter === 'photos'
               ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
-              : 'bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-800'
+              : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-800 shadow-xs dark:shadow-none'
           }`}
         >
           <Camera className="w-3.5 h-3.5" />
@@ -269,7 +269,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
             activeFilter === 'videos'
               ? 'bg-amber-500 text-neutral-950 font-bold shadow-md'
-              : 'bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-800'
+              : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-800 shadow-xs dark:shadow-none'
           }`}
         >
           <Film className="w-3.5 h-3.5" />
@@ -291,12 +291,12 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
           return (
             <div
               key={item.id}
-              className="snap-start shrink-0 w-[260px] sm:w-[300px] md:w-[320px] rounded-2xl bg-neutral-900/90 border border-neutral-800 hover:border-amber-500/50 transition-all duration-200 overflow-hidden shadow-xl flex flex-col group relative"
+              className="snap-start shrink-0 w-[260px] sm:w-[300px] md:w-[320px] rounded-2xl bg-white dark:bg-neutral-900/90 border border-neutral-200 dark:border-neutral-800 hover:border-amber-500/50 transition-all duration-200 overflow-hidden shadow-md dark:shadow-xl flex flex-col group relative"
             >
               {/* Media Card Thumbnail Container */}
               <div
                 onClick={() => onOpenLightbox(originalIndex)}
-                className="relative aspect-[4/3] w-full bg-neutral-950 overflow-hidden cursor-pointer"
+                className="relative aspect-[4/3] w-full bg-neutral-100 dark:bg-neutral-950 overflow-hidden cursor-pointer"
               >
                 {item.type === 'photo' ? (
                   <GalleryCardImage src={item.url} alt={item.title} />
@@ -348,12 +348,12 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                 <div>
                   <h4
                     onClick={() => onOpenLightbox(originalIndex)}
-                    className="text-xs sm:text-sm font-bold text-white group-hover:text-amber-300 transition-colors line-clamp-1 cursor-pointer"
+                    className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors line-clamp-1 cursor-pointer"
                   >
                     {item.title}
                   </h4>
                   {item.description && (
-                    <p className="text-[11px] text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
                   )}
@@ -361,7 +361,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
 
                 {/* Admin Management Controls (Reorder & Edit Caption & Delete) */}
                 {isAdmin && (
-                  <div className="mt-2.5 pt-2 border-t border-neutral-800/80 flex items-center justify-between gap-1 text-[11px]">
+                  <div className="mt-2.5 pt-2 border-t border-neutral-200 dark:border-neutral-800/80 flex items-center justify-between gap-1 text-[11px]">
                     <div className="flex items-center gap-1">
                       {onReorderMedia && (
                         <>
@@ -372,7 +372,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                               e.stopPropagation();
                               onReorderMedia(originalIndex, 'left');
                             }}
-                            className="p-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white disabled:opacity-30 cursor-pointer transition"
+                            className="p-1 rounded bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white disabled:opacity-30 cursor-pointer transition"
                             title="Geser Urutan ke Kiri / Atas"
                           >
                             <ArrowLeft className="w-3 h-3" />
@@ -384,7 +384,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                               e.stopPropagation();
                               onReorderMedia(originalIndex, 'right');
                             }}
-                            className="p-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white disabled:opacity-30 cursor-pointer transition"
+                            className="p-1 rounded bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white disabled:opacity-30 cursor-pointer transition"
                             title="Geser Urutan ke Kanan / Bawah"
                           >
                             <ArrowRight className="w-3 h-3" />
@@ -399,7 +399,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                             setTargetReplaceItem(item);
                             replaceFileInputRef.current?.click();
                           }}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-sky-500/20 text-neutral-300 hover:text-sky-300 cursor-pointer transition"
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 hover:bg-sky-500/20 text-neutral-700 dark:text-neutral-300 hover:text-sky-700 dark:hover:text-sky-300 cursor-pointer transition"
                           title="Ganti Foto/Video (Pilih file baru dari perangkat)"
                         >
                           <RefreshCw className="w-3 h-3" />
@@ -413,7 +413,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                             e.stopPropagation();
                             onEditCaption(item);
                           }}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-800 hover:bg-amber-500/20 text-neutral-300 hover:text-amber-300 cursor-pointer transition"
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 hover:bg-amber-500/20 text-neutral-700 dark:text-neutral-300 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer transition"
                           title="Edit Caption / Keterangan"
                         >
                           <Edit2 className="w-3 h-3" />
@@ -429,7 +429,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                           e.stopPropagation();
                           onRemoveMedia(item);
                         }}
-                        className="text-neutral-500 hover:text-rose-400 p-1 rounded transition cursor-pointer"
+                        className="text-neutral-400 hover:text-rose-500 dark:text-neutral-500 dark:hover:text-rose-400 p-1 rounded transition cursor-pointer"
                         title="Hapus media dari Supabase"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -439,11 +439,11 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                 )}
 
                 {/* Card Footer: Action button */}
-                <div className="mt-2.5 pt-2 border-t border-neutral-800/80 flex items-center justify-between">
+                <div className="mt-2.5 pt-2 border-t border-neutral-200 dark:border-neutral-800/80 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => onOpenLightbox(originalIndex)}
-                    className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition cursor-pointer"
+                    className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-1 transition cursor-pointer"
                   >
                     <span>{item.type === 'video' ? 'Putar Video' : 'Lihat Ukuran Penuh'}</span>
                     <ChevronRight className="w-3 h-3" />
@@ -453,7 +453,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                     <button
                       type="button"
                       onClick={() => onRemoveMedia(item)}
-                      className="text-neutral-500 hover:text-rose-400 p-1 rounded transition cursor-pointer"
+                      className="text-neutral-400 hover:text-rose-500 dark:text-neutral-500 dark:hover:text-rose-400 p-1 rounded transition cursor-pointer"
                       title="Hapus media ini"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -467,35 +467,35 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
 
         {/* Placeholder Upload Card for Next Dynamic Slot */}
         {nextSlot && (activeFilter === 'all' || (nextSlot.defaultType === 'video' ? activeFilter !== 'photos' : activeFilter !== 'videos')) && (
-          <div className="snap-start shrink-0 w-[260px] sm:w-[300px] md:w-[320px] rounded-2xl bg-neutral-900/60 border-2 border-dashed border-amber-500/40 hover:border-amber-400 transition-all duration-200 overflow-hidden shadow-xl flex flex-col justify-between p-4 group">
+          <div className="snap-start shrink-0 w-[260px] sm:w-[300px] md:w-[320px] rounded-2xl bg-amber-500/5 dark:bg-neutral-900/60 border-2 border-dashed border-amber-500/40 hover:border-amber-500 dark:hover:border-amber-400 transition-all duration-200 overflow-hidden shadow-md dark:shadow-xl flex flex-col justify-between p-4 group">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-md">
+                <span className="text-[10px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-md">
                   {nextSlot.badge}
                 </span>
-                <span className="text-[10px] text-neutral-400 font-medium bg-neutral-800 px-2 py-0.5 rounded">
+                <span className="text-[10px] text-neutral-600 dark:text-neutral-400 font-medium bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">
                   Belum ada foto/video
                 </span>
               </div>
 
-              <div className="aspect-[4/3] rounded-xl bg-neutral-950/80 border border-neutral-800/80 flex flex-col items-center justify-center p-4 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+              <div className="aspect-[4/3] rounded-xl bg-white dark:bg-neutral-950/80 border border-neutral-200 dark:border-neutral-800/80 flex flex-col items-center justify-center p-4 text-center shadow-xs dark:shadow-none">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
                   {nextSlot.defaultType === 'video' ? (
                     <Film className="w-6 h-6" />
                   ) : (
                     <Camera className="w-6 h-6" />
                   )}
                 </div>
-                <h4 className="text-xs font-bold text-white mb-1">
+                <h4 className="text-xs font-bold text-neutral-900 dark:text-white mb-1">
                   {nextSlot.label}
                 </h4>
-                <p className="text-[11px] text-neutral-400 leading-tight line-clamp-3">
+                <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-tight line-clamp-3">
                   {nextSlot.description} {isAdmin ? 'Klik tombol di bawah untuk memilih file asli.' : 'Admin dapat mengunggah file asli untuk slot ini.'}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-neutral-800">
+            <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-800">
               <input
                 ref={clusterInputRef}
                 type="file"

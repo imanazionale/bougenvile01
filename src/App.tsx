@@ -30,6 +30,8 @@ import { MediaLightbox } from './components/MediaLightbox';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { EditPropertyModal } from './components/EditPropertyModal';
 import { EditCaptionModal } from './components/EditCaptionModal';
+import { ThemeModeSelector } from './components/ThemeModeSelector';
+import { useTheme } from './lib/themeContext';
 import {
   supabase,
   fetchPropertyInfo,
@@ -845,9 +847,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0E1013] text-neutral-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#0E1013] text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors duration-200">
       {/* ================= TOP NAVIGATION BAR ================= */}
-      <header className="sticky top-0 z-40 bg-[#121418]/90 backdrop-blur-md border-b border-neutral-800/80 px-4 sm:px-6 py-3">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#121418]/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800/80 px-4 sm:px-6 py-3 transition-colors duration-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           {/* Logo & Title */}
           <div className="flex items-center gap-3 min-w-0">
@@ -856,20 +858,20 @@ export default function App() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-sm sm:text-base font-bold text-white tracking-wide truncate">
+                <h1 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white tracking-wide truncate">
                   Desain Promosi Rumah Kontrakan
                 </h1>
-                <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">
                   Depok
                 </span>
                 {adminUser && (
-                  <span className="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
                     <span>Admin Mode</span>
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-400 truncate">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                 Format Portrait 4:5 • Terintegrasi Supabase Backend
               </p>
             </div>
@@ -877,13 +879,16 @@ export default function App() {
 
           {/* Action Buttons & Admin Auth State */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Time-Based Light / Dark Mode Selector (Pagi-Sore Terang, Malam Gelap) */}
+            <ThemeModeSelector />
+
             {/* Admin Actions or Login Trigger */}
             {adminUser ? (
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setEditPropertyModalOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-amber-300 border border-amber-500/30 transition cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-500/30 transition cursor-pointer shadow-xs dark:shadow-none"
                   title="Edit data properti di Supabase"
                 >
                   <Building className="w-3.5 h-3.5" />
@@ -892,7 +897,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 border border-neutral-800 text-xs font-medium transition cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 hover:bg-rose-500/15 text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-300 border border-neutral-200 dark:border-neutral-800 text-xs font-medium transition cursor-pointer shadow-xs dark:shadow-none"
                   title="Keluar dari mode admin"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -906,7 +911,7 @@ export default function App() {
                   setAuthActionReason(undefined);
                   setAuthModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-amber-400 border border-neutral-700 transition cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-amber-700 dark:text-amber-400 border border-neutral-300 dark:border-neutral-700 transition cursor-pointer shadow-xs dark:shadow-none"
                 title="Login sebagai Admin untuk mengunggah & mengedit data"
               >
                 <Lock className="w-3.5 h-3.5" />
@@ -917,20 +922,20 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-neutral-200 border border-neutral-700 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition cursor-pointer shadow-xs dark:shadow-none"
               title="Lihat simulasi postingan di Instagram & Facebook"
             >
-              <Eye className="w-3.5 h-3.5 text-amber-400" />
+              <Eye className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
               <span className="hidden sm:inline">Simulasi Feed</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsCaptionOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold text-neutral-200 border border-neutral-700 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 transition cursor-pointer shadow-xs dark:shadow-none"
               title="Buka teks iklan siap pakai"
             >
-              <FileText className="w-3.5 h-3.5 text-emerald-400" />
+              <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="hidden sm:inline">Teks Iklan</span>
             </button>
 
@@ -953,15 +958,15 @@ export default function App() {
           {/* LEFT / CENTER: POSTER PREVIEW CANVAS */}
           <div className="lg:col-span-7 flex flex-col items-center">
             {/* Canvas Action Bar */}
-            <div className="w-full max-w-[480px] sm:max-w-[500px] flex items-center justify-between mb-3 px-1 text-xs text-neutral-400">
+            <div className="w-full max-w-[480px] sm:max-w-[500px] flex items-center justify-between mb-3 px-1 text-xs text-neutral-500 dark:text-neutral-400">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-neutral-300">Ukuran Asli 4:5</span>
-                <span className="text-[11px] bg-neutral-800 px-2 py-0.5 rounded text-neutral-400">
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300">Ukuran Asli 4:5</span>
+                <span className="text-[11px] bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-700 dark:text-neutral-400 font-mono">
                   1080 × 1350 px
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-amber-400/90 font-medium">
+                <span className="text-[11px] text-amber-600 dark:text-amber-400/90 font-medium">
                   {showGuides ? 'Safe Zone Aktif' : 'Pratinjau Bersih'}
                 </span>
               </div>
@@ -982,15 +987,15 @@ export default function App() {
             </div>
 
             {/* Quick Caption helper bar */}
-            <div className="w-full max-w-[480px] sm:max-w-[500px] mt-2 flex items-center justify-between text-xs text-neutral-400 bg-neutral-900/60 border border-neutral-800/80 px-3.5 py-2 rounded-xl">
+            <div className="w-full max-w-[480px] sm:max-w-[500px] mt-2 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800/80 px-3.5 py-2 rounded-xl shadow-xs dark:shadow-none">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
                 <span>Foto asli tersimpan di Supabase Storage bucket <strong>property-media</strong></span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCaptionOpen(true)}
-                className="text-amber-400 hover:text-amber-300 font-medium hover:underline cursor-pointer"
+                className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium hover:underline cursor-pointer shrink-0 ml-2"
               >
                 Lihat Teks Iklan &rarr;
               </button>
@@ -1023,13 +1028,13 @@ export default function App() {
             />
 
             {/* Contact quick view */}
-            <div className="p-3.5 rounded-xl bg-neutral-900/50 border border-neutral-800/70 text-xs text-neutral-400 flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800/70 text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-between shadow-xs dark:shadow-none">
               <div>
-                <span className="font-semibold text-neutral-300 block">WhatsApp Kontak Pemilik:</span>
-                <span className="text-[11px] text-neutral-400">Siap pasang di bio & caption postingan</span>
+                <span className="font-semibold text-neutral-800 dark:text-neutral-300 block">WhatsApp Kontak Pemilik:</span>
+                <span className="text-[11px] text-neutral-500 dark:text-neutral-400">Siap pasang di bio & caption postingan</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-white font-mono font-bold bg-neutral-800 px-2 py-0.5 rounded text-amber-300">
+                <span className="text-amber-800 dark:text-amber-300 font-mono font-bold bg-amber-50 dark:bg-neutral-800 border border-amber-200 dark:border-neutral-700 px-2.5 py-0.5 rounded">
                   {propertyData.contactNumber}
                 </span>
               </div>
@@ -1063,21 +1068,21 @@ export default function App() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm flex items-center gap-3 px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-700 shadow-2xl text-xs font-medium animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-2xl text-xs font-medium animate-in fade-in slide-in-from-bottom-2">
           {toast.type === 'success' ? (
-            <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <Check className="w-3.5 h-3.5" />
             </div>
           ) : (
-            <div className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
               <AlertCircle className="w-3.5 h-3.5" />
             </div>
           )}
-          <span className="text-neutral-200 flex-1 leading-snug">{toast.message}</span>
+          <span className="text-neutral-800 dark:text-neutral-200 flex-1 leading-snug">{toast.message}</span>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-neutral-500 hover:text-neutral-300 p-0.5 rounded transition cursor-pointer"
+            className="text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 p-0.5 rounded transition cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>

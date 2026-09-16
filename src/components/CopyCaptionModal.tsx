@@ -83,18 +83,18 @@ Silakan kirim pesan atau direct message untuk info lebih lanjut & jadwal survey 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 dark:bg-black/80 backdrop-blur-md">
+      <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800 bg-neutral-950">
-          <div className="flex items-center gap-2 text-amber-400">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
             <FileText className="w-5 h-5" />
-            <h3 className="font-bold text-sm sm:text-base text-white">Teks Iklan / Caption Medsos</h3>
+            <h3 className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white">Teks Iklan / Caption Medsos</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition"
+            className="p-1.5 rounded-lg text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -102,12 +102,12 @@ Silakan kirim pesan atau direct message untuk info lebih lanjut & jadwal survey 
 
         {/* Content Box */}
         <div className="p-5 space-y-4">
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
             Teks copywriting di bawah sudah disesuaikan dengan seluruh informasi resmi properti (tanpa penambahan data fiktif) dan siap dipaste ke Instagram, Facebook Marketplace, atau status WhatsApp.
           </p>
 
           <div className="relative">
-            <pre className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 text-xs sm:text-sm text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed max-h-[340px] overflow-y-auto">
+            <pre className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-xs sm:text-sm text-neutral-800 dark:text-neutral-200 font-mono whitespace-pre-wrap leading-relaxed max-h-[340px] overflow-y-auto">
               {captionText}
             </pre>
           </div>
@@ -119,7 +119,7 @@ Silakan kirim pesan atau direct message untuk info lebih lanjut & jadwal survey 
             <button
               type="button"
               onClick={handleCopy}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg cursor-pointer ${
                 copied
                   ? 'bg-emerald-600 text-white'
                   : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'

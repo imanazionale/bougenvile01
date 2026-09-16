@@ -38,20 +38,20 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 dark:bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden my-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800 bg-neutral-950/80">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950/80">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-neutral-400">Simulasi Tampilan Media Sosial:</span>
-            <div className="flex items-center bg-neutral-800 p-1 rounded-lg">
+            <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">Simulasi Tampilan Media Sosial:</span>
+            <div className="flex items-center bg-neutral-200 dark:bg-neutral-800 p-1 rounded-lg">
               <button
                 type="button"
                 onClick={() => setPlatform('instagram')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
                   platform === 'instagram'
                     ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white shadow'
-                    : 'text-neutral-400 hover:text-white'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 <Instagram className="w-3.5 h-3.5" />
@@ -60,10 +60,10 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
               <button
                 type="button"
                 onClick={() => setPlatform('marketplace')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
                   platform === 'marketplace'
                     ? 'bg-blue-600 text-white shadow'
-                    : 'text-neutral-400 hover:text-white'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
                 <Store className="w-3.5 h-3.5" />
@@ -75,14 +75,14 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition"
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body: Feed Container */}
-        <div className="p-4 sm:p-6 bg-neutral-950 flex justify-center max-h-[80vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 bg-neutral-100 dark:bg-neutral-950 flex justify-center max-h-[80vh] overflow-y-auto">
           {platform === 'instagram' ? (
             /* Instagram Post Mockup */
             <div className="w-full max-w-[420px] bg-black text-white rounded-xl border border-neutral-800 overflow-hidden shadow-2xl">
@@ -193,12 +193,12 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-3 border-t border-neutral-800 bg-neutral-950 flex justify-between items-center text-xs text-neutral-400">
+        <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 flex justify-between items-center text-xs text-neutral-600 dark:text-neutral-400">
           <span>Format rasio: <strong>4:5 (1080 x 1350 px)</strong> optimal untuk feed & posting marketplace.</span>
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-medium"
+            className="px-3 py-1.5 rounded-lg bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white font-medium cursor-pointer transition"
           >
             Tutup
           </button>
