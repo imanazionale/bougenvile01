@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, X, FileText, MessageCircle } from 'lucide-react';
+import { Copy, Check, X, FileText, MessageCircle, Share2 } from 'lucide-react';
 import { PropertyData } from '../types';
 import { getWhatsAppDirectUrl } from '../data';
 
@@ -127,6 +127,18 @@ Silakan kirim pesan atau direct message untuk info lebih lanjut & jadwal survey 
               {captionText.length} karakter • Siap diposting
             </span>
             <div className="flex items-center gap-2 w-full sm:w-auto">
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  `🏡 *RUMAH DIKONTRAKKAN DI DEPOK*\nCluster Islami Taman Jaya, Cipayung – Depok\n\n• Konsep: ${data.mezzanine}\n• Luas Tanah: ${data.landArea}\n• Biaya Sewa: *${data.priceFull}*\n• Fasilitas: Masjid di Dalam Cluster, Smart Door Lock, AC 1/2 PK\n• Akses: ±10 Menit ke Stasiun Depok & Dekat Tol Desari\n\n📲 *Hubungi Pemilik:*\n${waDirectUrl}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs bg-emerald-700 hover:bg-emerald-600 text-white transition-all shadow-md cursor-pointer"
+                title="Bagikan ringkasan info ke WhatsApp Story (Status)"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Share WA Story</span>
+              </a>
               <a
                 href={waDirectUrl}
                 target="_blank"

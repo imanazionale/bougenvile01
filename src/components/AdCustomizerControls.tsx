@@ -18,6 +18,9 @@ import {
   RotateCcw,
   Edit3,
   Lock,
+  MessageCircle,
+  Instagram,
+  Share2,
 } from 'lucide-react';
 import { ColorThemeId, PhotoLayout, PropertyPhotos } from '../types';
 import { COLOR_THEMES } from '../data';
@@ -33,6 +36,9 @@ interface AdCustomizerControlsProps {
   isExporting: boolean;
   onOpenPreview: () => void;
   onOpenCaption: () => void;
+  onShareWaStory?: () => void;
+  onShareInstagram?: () => void;
+  onOpenShareModal?: () => void;
   photos: PropertyPhotos;
   onPhotoUpload: (
     type: 'heroExterior' | 'mezzanineInterior' | 'clusterStreet',
@@ -56,6 +62,9 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
   isExporting,
   onOpenPreview,
   onOpenCaption,
+  onShareWaStory,
+  onShareInstagram,
+  onOpenShareModal,
   photos,
   onPhotoUpload,
   onResetPhotos,
@@ -121,6 +130,40 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
         >
           <Copy className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>Salin Teks Iklan</span>
+        </button>
+      </div>
+
+      {/* Social Media Share Buttons (WA Story & Instagram) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <button
+          type="button"
+          onClick={onShareWaStory}
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-950/20 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+          title="Bagikan ke WhatsApp Story (Status)"
+        >
+          <MessageCircle className="w-4 h-4 shrink-0" />
+          <span>Share WA Story</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onShareInstagram}
+          disabled={isExporting}
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-md shadow-pink-950/20 transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+          title="Posting poster 4:5 ke Instagram Story atau Feed"
+        >
+          <Instagram className="w-4 h-4 shrink-0" />
+          <span>Share IG (Story/Feed)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenShareModal}
+          className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold text-xs sm:text-sm border border-neutral-300 dark:border-neutral-700 shadow-xs dark:shadow-none transition cursor-pointer"
+          title="Buka menu lengkap opsi share sosial media"
+        >
+          <Share2 className="w-3.5 h-3.5 text-amber-500" />
+          <span>Opsi Share Lainnya</span>
         </button>
       </div>
 

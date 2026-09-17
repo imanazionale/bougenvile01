@@ -16,6 +16,8 @@ import {
   Edit3,
   Sparkles,
   MessageCircle,
+  Share2,
+  Instagram,
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { ColorThemeId, PhotoLayout, PropertyPhotos, MediaItem, PropertyData, GallerySlotInfo } from './types';
@@ -32,6 +34,7 @@ import { AdminAuthModal } from './components/AdminAuthModal';
 import { EditPropertyModal } from './components/EditPropertyModal';
 import { EditCaptionModal } from './components/EditCaptionModal';
 import { ThemeModeSelector } from './components/ThemeModeSelector';
+import { ShareSocialModal } from './components/ShareSocialModal';
 import { useTheme } from './lib/themeContext';
 import {
   supabase,
@@ -886,6 +889,117 @@ export default function App() {
     }
   };
 
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Formatted caption for WhatsApp Story
+  const getWaStoryText = () => {
+    const directWaUrl = getWhatsAppDirectUrl(
+      propertyData.contactNumber,
+      "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?"
+    );
+    return `🏡 *RUMAH DIKONTRAKKAN DI DEPOK*
+Cluster Islami Taman Jaya, Cipayung – Depok
+
+• Konsep: ${propertyData.mezzanine}
+• Luas Tanah: ${propertyData.landArea}
+• Biaya Sewa: *${propertyData.priceFull}*
+• Fasilitas: Smart Door Lock, AC 1/2 PK, Masjid di Dalam Cluster
+• Akses: ±10 Menit ke Stasiun Depok & Dekat Tol Desari
+
+Cluster sudah 95% terhuni, aman, asri & nyaman untuk keluarga.
+
+📲 *Hubungi Pemilik / Jadwal Survey:*
+${directWaUrl}`;
+  };
+
+  const getIgCaptionText = () => {
+    const directWaUrl = getWhatsAppDirectUrl(
+      propertyData.contactNumber,
+      "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?"
+    );
+    return `✨ RUMAH DIKONTRAKKAN DI DEPOK ✨
+Cluster Islami Taman Jaya, Cipayung – Depok
+
+Hunian nyaman dan asri dengan konsep modern mezanine untuk keluarga:
+📍 Lokasi: ${propertyData.location}
+💰 Sewa: ${propertyData.priceFull} (${propertyData.price}/bln)
+📐 Luas Tanah: ${propertyData.landArea} | ${propertyData.mezzanine}
+
+Keunggulan Properti:
+✓ Cluster Islami & Masjid di Dalam Cluster
+✓ ±10 Menit ke Stasiun Depok & Dekat Tol Desari
+✓ Smart Door Lock & AC 1/2 PK
+✓ Lingkungan 95% terhuni, aman & aktif
+
+"${propertyData.ctaTitle}"
+
+📲 Hubungi / WhatsApp: ${propertyData.contactNumber}
+Direct WA: ${directWaUrl}
+
+#rumahkontrakandepok #sewarumahdepok #clusterislamidepok #cipayungdepok #rumahmezanine #kontrakandepok #propertidepok #inforumahdepok`;
+  };
+
+  // Trigger Share to WhatsApp Story
+  const handleShareWaStory = async () => {
+    const text = getWaStoryText();
+    let copied = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        copied = true;
+      }
+    } catch {}
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Rumah Kontrakan di depok',
+          text,
+          url: window.location.href,
+        });
+        showToast('success', 'Berhasil membagikan ke WhatsApp Story!');
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+
+    const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(waShareUrl, '_blank', 'noopener,noreferrer');
+    showToast('success', copied ? 'Membuka WhatsApp & teks story tersalin!' : 'Membuka WhatsApp...');
+  };
+
+  // Trigger Share to Instagram (Story & Feed)
+  const handleShareInstagram = async () => {
+    const text = getIgCaptionText();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      }
+    } catch {}
+
+    // Automatically trigger HD 4:5 image export
+    handleExportPng();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Rumah Kontrakan di depok',
+          text,
+          url: window.location.href,
+        });
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+      }
+    }
+
+    setTimeout(() => {
+      window.open('https://www.instagram.com', '_blank', 'noopener,noreferrer');
+    }, 700);
+    showToast('success', 'Foto 4:5 diunduh & caption disalin! Buka Instagram untuk posting Story/Feed.');
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0E1013] text-neutral-900 dark:text-neutral-100 flex flex-col font-sans transition-colors duration-200">
       {/* ================= TOP NAVIGATION BAR ================= */}
@@ -981,6 +1095,16 @@ export default function App() {
 
             <button
               type="button"
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80 transition cursor-pointer shadow-xs dark:shadow-none"
+              title="Bagikan ke WhatsApp Story dan Instagram (Story & Feed)"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden sm:inline">Share WA & IG</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handleExportPng}
               disabled={isExporting}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs shadow-md transition disabled:opacity-50 cursor-pointer"
@@ -1056,6 +1180,9 @@ export default function App() {
               isExporting={isExporting}
               onOpenPreview={() => setIsPreviewOpen(true)}
               onOpenCaption={() => setIsCaptionOpen(true)}
+              onShareWaStory={handleShareWaStory}
+              onShareInstagram={handleShareInstagram}
+              onOpenShareModal={() => setIsShareModalOpen(true)}
               photos={photos}
               onPhotoUpload={handlePhotoUpload}
               onResetPhotos={handleResetPhotos}
@@ -1191,6 +1318,7 @@ export default function App() {
         theme={currentTheme}
         photoLayout={photoLayout}
         photos={photos}
+        onOpenShareModal={() => setIsShareModalOpen(true)}
       />
 
       {/* Copy Caption Modal */}
@@ -1198,6 +1326,15 @@ export default function App() {
         isOpen={isCaptionOpen}
         onClose={() => setIsCaptionOpen(false)}
         data={propertyData}
+      />
+
+      {/* Share to WA Story & Instagram Modal */}
+      <ShareSocialModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        data={propertyData}
+        onExportPng={handleExportPng}
+        isExporting={isExporting}
       />
 
       {/* Media Lightbox Modal */}

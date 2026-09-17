@@ -24,6 +24,7 @@ interface SocialPreviewModalProps {
   theme: ColorTheme;
   photoLayout: PhotoLayout;
   photos?: PropertyPhotos;
+  onOpenShareModal?: () => void;
 }
 
 export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
@@ -33,6 +34,7 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
   theme,
   photoLayout,
   photos,
+  onOpenShareModal,
 }) => {
   const [platform, setPlatform] = useState<'instagram' | 'marketplace'>('instagram');
 
@@ -193,9 +195,19 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>Chat WhatsApp Pemilik</span>
                   </a>
-                  <div className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenShareModal) {
+                        onClose();
+                        onOpenShareModal();
+                      }
+                    }}
+                    className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition cursor-pointer"
+                    title="Bagikan ke WhatsApp Story & Instagram"
+                  >
                     <Share2 className="w-4 h-4" />
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -203,15 +215,28 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 flex justify-between items-center text-xs text-neutral-600 dark:text-neutral-400">
-          <span>Format rasio: <strong>4:5 (1080 x 1350 px)</strong> optimal untuk feed & posting marketplace.</span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3 py-1.5 rounded-lg bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white font-medium cursor-pointer transition"
-          >
-            Tutup
-          </button>
+        <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 flex flex-wrap gap-2 justify-between items-center text-xs text-neutral-600 dark:text-neutral-400">
+          <span className="hidden sm:inline">Format rasio: <strong>4:5 (1080 x 1350 px)</strong> optimal untuk feed & story.</span>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (onOpenShareModal) onOpenShareModal();
+              }}
+              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share WA Story & IG</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 rounded-lg bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white font-medium cursor-pointer transition"
+            >
+              Tutup
+            </button>
+          </div>
         </div>
       </div>
     </div>
