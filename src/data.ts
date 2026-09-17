@@ -28,13 +28,13 @@ export const PROPERTY_DATA: PropertyData = {
 export const WHATSAPP_CONFIG = {
   rawNumber: "0812-8304-3842",
   phoneDigits: "6281283043842",
-  defaultMessage: "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?",
-  directUrl: `https://wa.me/6281283043842?text=${encodeURIComponent("Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?")}`,
+  defaultMessage: "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?",
+  directUrl: `https://wa.me/6281283043842?text=${encodeURIComponent("Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?")}`,
 };
 
 export function getWhatsAppDirectUrl(
   phone: string = "0812-8304-3842",
-  message: string = "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?"
+  message: string = "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?"
 ): string {
   let cleanDigits = phone.replace(/[^0-9]/g, '');
   if (cleanDigits.startsWith('0')) {

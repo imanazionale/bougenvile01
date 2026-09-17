@@ -20,7 +20,7 @@ export const CopyCaptionModal: React.FC<CopyCaptionModalProps> = ({
 
   const waDirectUrl = getWhatsAppDirectUrl(
     data.contactNumber,
-    "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?"
+    "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?"
   );
 
   const captionText = `✨ ${data.title} ✨

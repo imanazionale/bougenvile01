@@ -1083,7 +1083,7 @@ export default function App() {
                 <a
                   href={getWhatsAppDirectUrl(
                     propertyData.contactNumber,
-                    "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?"
+                    "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?"
                   )}
                   target="_blank"
                   rel="noopener noreferrer"

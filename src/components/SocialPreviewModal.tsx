@@ -185,7 +185,7 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
 
                 <div className="flex gap-2 pt-1">
                   <a
-                    href={getWhatsAppDirectUrl(data.contactNumber, "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?")}
+                    href={getWhatsAppDirectUrl(data.contactNumber, "Assalamu’alaikum warahmatullahi wabarakatuh. Apakah rumahnya masih tersedia?")}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs text-center flex items-center justify-center gap-1.5 transition cursor-pointer"
