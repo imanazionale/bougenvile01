@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Copy, Check, X, FileText, Share2 } from 'lucide-react';
+import { Copy, Check, X, FileText, MessageCircle } from 'lucide-react';
 import { PropertyData } from '../types';
+import { getWhatsAppDirectUrl } from '../data';
 
 interface CopyCaptionModalProps {
   isOpen: boolean;
@@ -16,6 +17,11 @@ export const CopyCaptionModal: React.FC<CopyCaptionModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
+
+  const waDirectUrl = getWhatsAppDirectUrl(
+    data.contactNumber,
+    "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?"
+  );
 
   const captionText = `✨ ${data.title} ✨
 Hunian Nyaman di Lingkungan Islami & Strategis Depok
@@ -45,6 +51,7 @@ KENAPA PILIH RUMAH INI?
 
 📲 ${data.ctaButton}:
 Hubungi / WhatsApp: ${data.contactNumber}
+Direct WhatsApp: ${waDirectUrl}
 
 Silakan kirim pesan atau direct message untuk info lebih lanjut & jadwal survey lokasi langsung.
 
@@ -115,31 +122,43 @@ Silakan kirim pesan atau direct message untuk info lebih lanjut & jadwal survey 
             </pre>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2">
             <span className="text-xs text-neutral-500">
               {captionText.length} karakter • Siap diposting
             </span>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg cursor-pointer ${
-                copied
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'
-              }`}
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  <span>Tersalin ke Clipboard!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  <span>Salin Teks Lengkap</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <a
+                href={waDirectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md cursor-pointer"
+                title="Buka WhatsApp langsung ke pemilik"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Tes Chat WA</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg cursor-pointer ${
+                  copied
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Tersalin!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Salin Teks</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

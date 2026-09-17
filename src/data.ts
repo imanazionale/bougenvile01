@@ -25,6 +25,26 @@ export const PROPERTY_DATA: PropertyData = {
   contactNumber: "0812-8304-3842",
 };
 
+export const WHATSAPP_CONFIG = {
+  rawNumber: "0812-8304-3842",
+  phoneDigits: "6281283043842",
+  defaultMessage: "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?",
+  directUrl: `https://wa.me/6281283043842?text=${encodeURIComponent("Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?")}`,
+};
+
+export function getWhatsAppDirectUrl(
+  phone: string = "0812-8304-3842",
+  message: string = "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?"
+): string {
+  let cleanDigits = phone.replace(/[^0-9]/g, '');
+  if (cleanDigits.startsWith('0')) {
+    cleanDigits = '62' + cleanDigits.slice(1);
+  } else if (!cleanDigits.startsWith('62')) {
+    cleanDigits = '62' + cleanDigits;
+  }
+  return `https://wa.me/${cleanDigits}?text=${encodeURIComponent(message)}`;
+}
+
 export const COLOR_THEMES: Record<string, ColorTheme> = {
   'light': {
     id: 'light',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, Key, ShieldCheck, UserPlus, LogIn, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
-import { signInAdmin, signUpAdmin } from '../lib/supabase';
+import { X, Lock, Mail, Key, ShieldCheck, LogIn, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { signInAdmin } from '../lib/supabase';
 
 interface AdminAuthModalProps {
   isOpen: boolean;
@@ -17,7 +17,6 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
   defaultEmail = 'Nurimaniman22@gmail.com',
   actionReason,
 }) => {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,46 +37,24 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
     setSuccessMsg(null);
 
     try {
-      if (mode === 'signin') {
-        const { data, error } = await signInAdmin(email, password);
-        if (error) {
-          if (error.message.toLowerCase().includes('invalid login credentials')) {
-            setErrorMsg('Email atau password tidak sesuai. Pastikan Anda sudah mendaftar dan mengonfirmasi email.');
-          } else if (error.message.toLowerCase().includes('email not confirmed')) {
-            setErrorMsg('Email belum dikonfirmasi. Periksa kotak masuk / spam email Anda dan klik tautan konfirmasi.');
-          } else {
-            setErrorMsg(error.message);
-          }
-          return;
-        }
-
-        if (data.user) {
-          setSuccessMsg('Login berhasil! Mode Admin aktif.');
-          setTimeout(() => {
-            onAuthSuccess(data.user?.email || email);
-            onClose();
-          }, 800);
-        }
-      } else {
-        const { data, error } = await signUpAdmin(email, password);
-        if (error) {
-          setErrorMsg(error.message);
-          return;
-        }
-
-        if (data.session) {
-          setSuccessMsg('Pendaftaran berhasil & Anda langsung masuk sebagai Admin!');
-          setTimeout(() => {
-            onAuthSuccess(data.user?.email || email);
-            onClose();
-          }, 1000);
+      const { data, error } = await signInAdmin(email, password);
+      if (error) {
+        if (error.message.toLowerCase().includes('invalid login credentials')) {
+          setErrorMsg('Email atau password tidak sesuai. Pastikan kredensial admin Anda benar.');
+        } else if (error.message.toLowerCase().includes('email not confirmed')) {
+          setErrorMsg('Email belum dikonfirmasi. Periksa kotak masuk / spam email Anda dan klik tautan konfirmasi.');
         } else {
-          setSuccessMsg(
-            'Akun admin berhasil didaftarkan! Tautan konfirmasi telah dikirimkan ke ' +
-              email +
-              '. Silakan periksa inbox/spam email Anda lalu klik tautan konfirmasi, kemudian kembali login.'
-          );
+          setErrorMsg(error.message);
         }
+        return;
+      }
+
+      if (data.user) {
+        setSuccessMsg('Login berhasil! Mode Admin aktif.');
+        setTimeout(() => {
+          onAuthSuccess(data.user?.email || email);
+          onClose();
+        }, 800);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan sistem autentikasi.');
@@ -97,7 +74,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white tracking-wide">
-                Autentikasi Admin Properti
+                Login Admin Properti
               </h3>
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 Akses Pengelolaan Media & Data Properti
@@ -120,42 +97,6 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
             <span>{actionReason}</span>
           </div>
         )}
-
-        {/* Mode switcher tabs */}
-        <div className="grid grid-cols-2 p-1.5 mx-6 mt-5 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signin');
-              setErrorMsg(null);
-              setSuccessMsg(null);
-            }}
-            className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
-              mode === 'signin'
-                ? 'bg-amber-500 text-neutral-950 font-bold shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span>Masuk (Sign In)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setErrorMsg(null);
-              setSuccessMsg(null);
-            }}
-            className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
-              mode === 'signup'
-                ? 'bg-amber-500 text-neutral-950 font-bold shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Daftar Akun Baru</span>
-          </button>
-        </div>
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -202,7 +143,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Minimal 6 karakter"
+                placeholder="Masukkan kata sandi admin"
                 className="w-full pl-9 pr-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
               />
             </div>
@@ -217,17 +158,12 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
               {loading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Memproses...</span>
-                </>
-              ) : mode === 'signin' ? (
-                <>
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Masuk sebagai Admin</span>
+                  <span>Memverifikasi...</span>
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Daftarkan Akun Admin</span>
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Masuk sebagai Admin</span>
                 </>
               )}
             </button>

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ColorTheme, PhotoLayout, PropertyData, PropertyPhotos } from '../types';
 import { AdPoster } from './AdPoster';
+import { getWhatsAppDirectUrl } from '../data';
 
 interface SocialPreviewModalProps {
   isOpen: boolean;
@@ -183,10 +184,15 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
                 </div>
 
                 <div className="flex gap-2 pt-1">
-                  <div className="flex-1 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs text-center flex items-center justify-center gap-1.5">
+                  <a
+                    href={getWhatsAppDirectUrl(data.contactNumber, "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs text-center flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  >
                     <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Kirim Pesan ke Pengiklan</span>
-                  </div>
+                    <span>Chat WhatsApp Pemilik</span>
+                  </a>
                   <div className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300">
                     <Share2 className="w-4 h-4" />
                   </div>

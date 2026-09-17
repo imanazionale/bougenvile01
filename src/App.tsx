@@ -15,10 +15,11 @@ import {
   Building,
   Edit3,
   Sparkles,
+  MessageCircle,
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { ColorThemeId, PhotoLayout, PropertyPhotos, MediaItem, PropertyData, GallerySlotInfo } from './types';
-import { PROPERTY_DATA, COLOR_THEMES } from './data';
+import { PROPERTY_DATA, COLOR_THEMES, getWhatsAppDirectUrl } from './data';
 import { getNextGallerySlot, getSlotBadge, orderGalleryMediaItems } from './lib/gallerySlots';
 import { formatUploadErrorMessage, formatFileSize } from './lib/imageOptimizer';
 import { AdPoster } from './components/AdPoster';
@@ -1067,16 +1068,32 @@ export default function App() {
               onOpenEditProperty={() => setEditPropertyModalOpen(true)}
             />
 
-            {/* Contact quick view */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800/70 text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-between shadow-xs dark:shadow-none">
+            {/* Contact quick view with direct WhatsApp click */}
+            <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800/70 text-xs text-neutral-600 dark:text-neutral-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs dark:shadow-none">
               <div>
-                <span className="font-semibold text-neutral-800 dark:text-neutral-300 block">WhatsApp Kontak Pemilik:</span>
-                <span className="text-[11px] text-neutral-500 dark:text-neutral-400">Siap pasang di bio & caption postingan</span>
+                <div className="flex items-center gap-1.5 font-semibold text-neutral-800 dark:text-neutral-200">
+                  <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>WhatsApp Kontak Pemilik:</span>
+                </div>
+                <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block pt-0.5">
+                  Klik nomor untuk langsung chat dengan salam pembuka otomatis
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-amber-800 dark:text-amber-300 font-mono font-bold bg-amber-50 dark:bg-neutral-800 border border-amber-200 dark:border-neutral-700 px-2.5 py-0.5 rounded">
-                  {propertyData.contactNumber}
-                </span>
+                <a
+                  href={getWhatsAppDirectUrl(
+                    propertyData.contactNumber,
+                    "Assalamualaikum, Apakah ini pemilik Rumah Kontrakan di Depok ?"
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition hover:scale-[1.02] cursor-pointer"
+                  title="Klik untuk langsung chat ke WhatsApp pemilik"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span className="font-mono">{propertyData.contactNumber}</span>
+                  <span className="hidden sm:inline font-normal text-emerald-100">• Chat Langsung</span>
+                </a>
               </div>
             </div>
           </div>
