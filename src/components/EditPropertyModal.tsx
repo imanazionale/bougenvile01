@@ -27,6 +27,10 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
   const [description, setDescription] = useState(
     propertyData.description || propertyData.tagline || 'Hunian Asri & Nyaman untuk Keluarga'
   );
+  const [clusterInfo, setClusterInfo] = useState(
+    propertyData.clusterInfo ||
+      'Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.'
+  );
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -39,6 +43,10 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
       setPrice(propertyData.price_numeric || 2300000);
       setDescription(
         propertyData.description || propertyData.tagline || 'Hunian Asri & Nyaman untuk Keluarga'
+      );
+      setClusterInfo(
+        propertyData.clusterInfo ||
+          'Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.'
       );
       setErrorMsg(null);
       setSuccessMsg(null);
@@ -81,7 +89,7 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
       );
 
       if (error) {
-        setErrorMsg(error.message || 'Gagal menyimpan ke tabel properties Supabase.');
+        setErrorMsg(error.message || 'Gagal menyimpan data properti.');
         return;
       }
 
@@ -102,9 +110,10 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
         priceFull: `${priceJutaFormatted} / bulan`,
         description: description.trim(),
         tagline: description.trim() || propertyData.tagline,
+        clusterInfo: clusterInfo.trim(),
       };
 
-      setSuccessMsg('Informasi properti berhasil disimpan ke basis data Supabase!');
+      setSuccessMsg('Informasi properti berhasil disimpan!');
       setTimeout(() => {
         onSaveSuccess(updated);
         onClose();
@@ -118,9 +127,9 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white dark:bg-[#16181D] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg bg-white dark:bg-[#16181D] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800/80 bg-neutral-50 dark:bg-neutral-900/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800/80 bg-neutral-50 dark:bg-neutral-900/60 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <Building className="w-4 h-4" />
@@ -130,7 +139,7 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
                 Edit Informasi Properti
               </h3>
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                Tersimpan Permanen di Tabel Supabase "properties"
+                Pembaruan Data & Informasi Properti Resmi
               </p>
             </div>
           </div>
@@ -236,11 +245,25 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               <span>Deskripsi / Tagline Properti</span>
             </label>
             <textarea
-              rows={3}
+              rows={2}
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Deskripsi hunian, keunggulan cluster islami, fasilitas, dll."
+              className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1 flex items-center gap-1.5">
+              <Building className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Informasi Lingkungan Cluster</span>
+            </label>
+            <textarea
+              rows={2}
+              value={clusterInfo}
+              onChange={(e) => setClusterInfo(e.target.value)}
+              placeholder="Cluster sudah 95% terhuni, lingkungan nyaman dan aktif..."
               className="w-full px-3 py-2 text-xs bg-neutral-50 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition resize-none"
             />
           </div>
@@ -261,7 +284,7 @@ export const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               {loading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Menyimpan ke Supabase...</span>
+                  <span>Menyimpan...</span>
                 </>
               ) : (
                 <>

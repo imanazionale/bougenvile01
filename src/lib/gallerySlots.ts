@@ -1,38 +1,38 @@
 import { GallerySlotInfo, MediaItem } from '../types';
 
 /**
- * Predefined labels and metadata for the first 4 items in the property gallery:
- * - 1st media (sort_order 0): Tampak Depan Rumah & Carport
- * - 2nd media (sort_order 1): Area Mezanine 1/2 Lantai & Tangga
- * - 3rd media (sort_order 2): Lingkungan & Jalanan Cluster Asri
- * - 4th media (sort_order 3): Video Walkthrough Hunian / Dokumentasi Properti
+ * Predefined labels and metadata for the property gallery:
+ * - 1st media (sort_order 0): 1. Foto Depan Rumah
+ * - 2nd media (sort_order 1): 2. Foto Mezanine
+ * - 3rd media (sort_order 2): 3. Foto Jalanan Cluster
+ * - 4th media and beyond: Video dokumentasi hunian
  */
 export const PRIMARY_SLOT_DEFINITIONS: Omit<GallerySlotInfo, 'slot' | 'sort_order'>[] = [
   {
-    badge: '1. Tampak Depan',
-    caption: 'Tampak Depan Rumah & Carport',
+    badge: '1. Foto Depan Rumah',
+    caption: 'Foto Depan Rumah & Carport',
     category: 'exterior',
     defaultType: 'photo',
-    label: 'Tampak Depan Rumah',
-    description: 'Foto fasad dan tampak depan rumah belum tersimpan di sistem. Klik tombol di bawah untuk memilih foto asli.',
-    buttonLabel: 'Pilih Foto Tampak Depan',
+    label: 'Foto Depan Rumah',
+    description: 'Foto fasad dan tampak depan rumah asli di cluster.',
+    buttonLabel: 'Pilih Foto Depan Rumah',
   },
   {
-    badge: '2. Area Mezanine',
-    caption: 'Area Mezanine 1/2 Lantai & Tangga',
+    badge: '2. Foto Mezanine',
+    caption: 'Foto Mezanine 1/2 Lantai & Tangga',
     category: 'mezzanine',
     defaultType: 'photo',
-    label: 'Area Mezanine 1/2 Lantai',
-    description: 'Foto area mezanine fungsional belum tersimpan di sistem. Klik tombol di bawah untuk memilih foto asli.',
-    buttonLabel: 'Pilih Foto Area Mezanine',
+    label: 'Foto Mezanine 1/2 Lantai',
+    description: 'Foto area mezanine fungsional 1/2 lantai.',
+    buttonLabel: 'Pilih Foto Mezanine',
   },
   {
-    badge: '3. Lingkungan & Jalanan Cluster Asri',
-    caption: 'Lingkungan & Jalanan Cluster Asri',
+    badge: '3. Foto Jalanan Cluster',
+    caption: 'Foto Jalanan & Lingkungan Cluster',
     category: 'cluster',
     defaultType: 'photo',
-    label: 'Lingkungan & Jalanan Cluster Asri',
-    description: 'Foto kondisi jalan cluster asri belum tersimpan di sistem. Klik tombol di bawah untuk memilih foto asli.',
+    label: 'Foto Jalanan Cluster',
+    description: 'Foto lingkungan dan jalanan cluster asri yang tertata dan nyaman.',
     buttonLabel: 'Pilih Foto Jalanan Cluster',
   },
   {
@@ -40,9 +40,9 @@ export const PRIMARY_SLOT_DEFINITIONS: Omit<GallerySlotInfo, 'slot' | 'sort_orde
     caption: 'Video Walkthrough Hunian',
     category: 'walkthrough',
     defaultType: 'video',
-    label: 'Video Walkthrough / Foto Hunian',
-    description: 'Video walkthrough atau foto dokumentasi hunian belum tersimpan di sistem. Klik tombol di bawah untuk memilih file.',
-    buttonLabel: 'Pilih Video / Foto Hunian',
+    label: 'Video Dokumentasi Hunian',
+    description: 'Video walkthrough atau dokumentasi video ruangan rumah.',
+    buttonLabel: 'Pilih Video Hunian',
   },
 ];
 
@@ -104,58 +104,56 @@ export function getNextGallerySlot(
     };
   }
 
-  // Dynamic additional media items for sort_order >= 4
+  // Dynamic additional media items for sort_order >= 4: default to video
   return {
     slot: displaySlot,
     sort_order: nextSortOrder,
-    badge: `${displaySlot}. Media Tambahan`,
-    caption: `Dokumentasi Properti #${displaySlot}`,
-    category: 'interior',
-    defaultType: 'photo',
-    label: `Media Tambahan #${displaySlot}`,
-    description: `Media dokumentasi properti urutan #${displaySlot}. Klik tombol di bawah untuk memilih file foto atau video.`,
-    buttonLabel: `Pilih File #${displaySlot}`,
+    badge: `${displaySlot}. Video Walkthrough`,
+    caption: `Video Dokumentasi #${displaySlot}`,
+    category: 'walkthrough',
+    defaultType: 'video',
+    label: `Video Dokumentasi #${displaySlot}`,
+    description: `Media video dokumentasi hunian urutan #${displaySlot}. Klik tombol di bawah untuk memilih file video atau foto.`,
+    buttonLabel: `Pilih Video #${displaySlot}`,
   };
 }
 
 /**
  * Format badge for a given sort_order (0-indexed) and caption
- * - Automatically detects keywords in caption (depan, belakang, mezanine, cluster/jalan, walkthrough)
- * - Guarantees sequential 1-based numbering: 1., 2., 3., 4., 5...
- * - Handles custom captions with clean Title Casing
+ * Strictly reflects the required ordering:
+ * 1. Foto Depan Rumah
+ * 2. Foto Mezanine
+ * 3. Foto Jalanan Cluster
+ * 4. dan seterusnya Video / Media
  */
 export function getSlotBadge(sortOrder: number, caption?: string, isVideo?: boolean): string {
   const displayIndex = sortOrder + 1;
   const cleanCaption = caption?.trim();
 
-  if (cleanCaption) {
-    const lower = cleanCaption.toLowerCase();
-    if (lower.includes('depan')) {
-      return `${displayIndex}. Tampak Depan`;
-    }
-    if (lower.includes('belakang')) {
-      return `${displayIndex}. ${isVideo ? 'Video Area Belakang' : 'Area Belakang'}`;
-    }
-    if (lower.includes('mezanine')) {
-      return `${displayIndex}. Area Mezanine`;
-    }
-    if (lower.includes('cluster') || lower.includes('jalan')) {
-      return `${displayIndex}. Lingkungan & Jalanan Cluster Asri`;
-    }
-    if (lower.includes('walkthrough')) {
+  if (sortOrder === 0) return '1. Foto Depan Rumah';
+  if (sortOrder === 1) return '2. Foto Mezanine';
+  if (sortOrder === 2) return '3. Foto Jalanan Cluster';
+
+  if (isVideo) {
+    if (cleanCaption && cleanCaption.toLowerCase().includes('walkthrough')) {
       return `${displayIndex}. Video Walkthrough`;
     }
-    // Capitalize first letter of custom caption
+    if (cleanCaption && cleanCaption.toLowerCase().includes('belakang')) {
+      return `${displayIndex}. Video Area Belakang`;
+    }
+    if (cleanCaption) {
+      const formatted = cleanCaption.charAt(0).toUpperCase() + cleanCaption.slice(1);
+      return `${displayIndex}. ${formatted.startsWith('Video') ? formatted : 'Video ' + formatted}`;
+    }
+    return `${displayIndex}. Video Walkthrough`;
+  }
+
+  if (cleanCaption) {
     const formatted = cleanCaption.charAt(0).toUpperCase() + cleanCaption.slice(1);
     return `${displayIndex}. ${formatted}`;
   }
 
-  // Fallbacks if no caption provided
-  if (sortOrder === 0) return `${displayIndex}. Tampak Depan`;
-  if (sortOrder === 1) return `${displayIndex}. ${isVideo ? 'Video Dokumentasi' : 'Area Mezanine'}`;
-  if (sortOrder === 2) return `${displayIndex}. Lingkungan & Jalanan Cluster Asri`;
-  if (isVideo) return `${displayIndex}. Video Walkthrough`;
-  return `${displayIndex}. Foto Properti`;
+  return `${displayIndex}. Video Dokumentasi`;
 }
 
 /**
@@ -169,12 +167,109 @@ export function getSlotCategory(
   if (isVideo) return 'walkthrough';
   const lower = caption?.toLowerCase() || '';
   if (lower.includes('depan') || sortOrder === 0) return 'exterior';
-  if (lower.includes('mezanine')) return 'mezzanine';
-  if (lower.includes('jalan') || lower.includes('cluster')) return 'cluster';
+  if (lower.includes('mezanine') || sortOrder === 1) return 'mezzanine';
+  if (lower.includes('jalan') || lower.includes('cluster') || sortOrder === 2) return 'cluster';
   if (lower.includes('walkthrough')) return 'walkthrough';
   if (lower.includes('belakang')) return 'interior';
   if (sortOrder === 1) return 'mezzanine';
   if (sortOrder === 2) return 'cluster';
   return 'interior';
+}
+
+/**
+ * Enforce strict gallery media order:
+ * 1. Foto Depan Rumah
+ * 2. Foto Mezanine
+ * 3. Foto Jalanan Cluster
+ * 4. dan seterusnya bebas Video semua
+ */
+export function orderGalleryMediaItems<T extends {
+  type?: string;
+  media_type?: string;
+  category?: string;
+  caption?: string | null;
+  file_path?: string;
+  url?: string;
+  title?: string;
+  sort_order?: number;
+  id?: any;
+}>(items: T[]): T[] {
+  if (!items || items.length === 0) return [];
+
+  const isVideoItem = (item: T) =>
+    item.type === 'video' ||
+    item.media_type === 'video' ||
+    item.category === 'walkthrough' ||
+    (item.file_path && /\.(mp4|mov|webm|mkv|avi|m4v|3gp)$/i.test(item.file_path)) ||
+    (item.url && /\.(mp4|mov|webm|mkv|avi|m4v|3gp)(\?|$)/i.test(item.url)) ||
+    (item.caption && item.caption.toLowerCase().includes('video'));
+
+  const photos = items.filter((item) => !isVideoItem(item));
+  const videos = items.filter((item) => isVideoItem(item));
+
+  // 1. Foto Depan Rumah
+  let depanItem = photos.find(
+    (p) =>
+      p.category === 'exterior' ||
+      /depan|fasad|carport|131958/i.test(p.caption || '') ||
+      /depan|fasad|carport|131958/i.test(p.title || '') ||
+      /depan|fasad|carport|131958/i.test(p.file_path || '')
+  );
+
+  // 2. Foto Mezanine
+  let mezanineItem = photos.find(
+    (p) =>
+      p !== depanItem &&
+      (p.category === 'mezzanine' ||
+        /mezan|tangga|130239/i.test(p.caption || '') ||
+        /mezan|tangga|130239/i.test(p.title || '') ||
+        /mezan|tangga|130239/i.test(p.file_path || ''))
+  );
+
+  // 3. Foto Jalanan Cluster
+  let clusterItem = photos.find(
+    (p) =>
+      p !== depanItem &&
+      p !== mezanineItem &&
+      (p.category === 'cluster' ||
+        /cluster|jalan|lingkungan/i.test(p.caption || '') ||
+        /cluster|jalan|lingkungan/i.test(p.title || '') ||
+        /cluster|jalan|lingkungan/i.test(p.file_path || ''))
+  );
+
+  const remainingPhotos = photos.filter(
+    (p) => p !== depanItem && p !== mezanineItem && p !== clusterItem
+  );
+
+  if (!depanItem && remainingPhotos.length > 0) {
+    depanItem = remainingPhotos.shift();
+  }
+  if (!mezanineItem && remainingPhotos.length > 0) {
+    mezanineItem = remainingPhotos.shift();
+  }
+  if (!clusterItem && remainingPhotos.length > 0) {
+    clusterItem = remainingPhotos.shift();
+  }
+
+  // Videos sorted by sort_order or id
+  const sortedVideos = [...videos].sort((a, b) => {
+    const oA = a.sort_order ?? 999;
+    const oB = b.sort_order ?? 999;
+    if (oA !== oB) return oA - oB;
+    return Number(a.id || 0) - Number(b.id || 0);
+  });
+
+  const ordered: T[] = [];
+  if (depanItem) ordered.push(depanItem);
+  if (mezanineItem) ordered.push(mezanineItem);
+  if (clusterItem) ordered.push(clusterItem);
+
+  // 4. dan seterusnya bebas Video semua
+  ordered.push(...sortedVideos);
+
+  // Any remaining photos (if any)
+  ordered.push(...remainingPhotos);
+
+  return ordered;
 }
 

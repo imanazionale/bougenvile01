@@ -10,6 +10,8 @@ export const PROPERTY_DATA: PropertyData = {
   pricePeriod: "/ bulan",
   priceFull: "Rp 2,3 Juta / bulan",
   targetAudience: "Keluarga muda / pasangan di lingkungan aman & islami",
+  description: "Hunian nyaman dan asri di Taman Jaya, Cipayung – Depok. Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.",
+  clusterInfo: "Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.",
   highlights: [
     { id: '1', text: 'Cluster Islami', icon: 'ShieldCheck' },
     { id: '2', text: 'Masjid di Dalam Cluster', icon: 'Landmark' },
@@ -59,31 +61,31 @@ export const COLOR_THEMES: Record<string, ColorTheme> = {
 };
 
 /**
- * Urutan Galeri Media Sesuai Permintaan User:
- * 1. Tampak depan rumah
- * 2. Area mezanine
- * 3. Foto interior lainnya
- * 4. Foto lingkungan cluster
- * 5. Video walkthrough rumah
- * 6. Video/foto fasilitas lainnya sesuai file upload
+ * Urutan Galeri Media Sesuai Ketentuan:
+ * 1. Foto Depan Rumah
+ * 2. Foto Mezanine
+ * 3. Foto Jalanan Cluster
+ * 4. dan seterusnya bebas Video semua
  */
 export const DEFAULT_MEDIA_ITEMS: MediaItem[] = [
   {
     id: 'media-1-exterior',
     type: 'photo',
     url: '/20260905_131958.jpg',
-    title: 'Tampak Depan Rumah & Carport',
+    title: 'Foto Depan Rumah & Carport',
     category: 'exterior',
-    badge: '1. Tampak Depan',
+    badge: '1. Foto Depan Rumah',
     description: 'Fasad rumah minimalis modern di cluster asri, dilengkapi carport dan smart door lock.',
+    sort_order: 0,
   },
   {
     id: 'media-2-mezzanine',
     type: 'photo',
     url: '/20260905_130239.jpg',
-    title: 'Area Mezanine 1/2 Lantai & Tangga',
+    title: 'Foto Mezanine 1/2 Lantai & Tangga',
     category: 'mezzanine',
-    badge: '2. Area Mezanine',
+    badge: '2. Foto Mezanine',
     description: 'Konsep mezanine fungsional 1/2 lantai untuk ruang kerja/santai/kamar ekstra dengan sirkulasi udara optimal.',
+    sort_order: 1,
   },
 ];

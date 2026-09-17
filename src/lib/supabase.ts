@@ -1,6 +1,6 @@
 import { createClient, User, Session } from '@supabase/supabase-js';
 import { MediaItem, PropertyData } from '../types';
-import { getSlotBadge, getSlotCategory } from './gallerySlots';
+import { getSlotBadge, getSlotCategory, orderGalleryMediaItems } from './gallerySlots';
 import { compressImageFile, formatUploadErrorMessage, isImageFile, isVideoFile, formatFileSize } from './imageOptimizer';
 import { compressVideoFile, MAX_INPUT_VIDEO_SIZE_BYTES } from './videoCompressor';
 
@@ -230,34 +230,14 @@ export async function fetchPropertyMedia(propertyId?: number): Promise<MediaItem
       return [];
     }
 
-    // 1. Sort items primarily by sort_order and secondarily by id
-    const sortedRows = [...data].sort((a, b) => {
-      const orderA = a.sort_order ?? 999;
-      const orderB = b.sort_order ?? 999;
-      if (orderA !== orderB) return orderA - orderB;
-      return (a.id ?? 0) - (b.id ?? 0);
-    });
+    // 1. Strict ordering required by user:
+    // 1. Foto Depan Rumah
+    // 2. Foto Mezanine
+    // 3. Foto Jalanan Cluster
+    // 4. dan seterusnya bebas Video semua
+    const sortedRows = orderGalleryMediaItems(data);
 
-    // 2. Resolve duplicate #4: User requested the last #4 media (belakang) to become #2
-    const belakangIndex = sortedRows.findIndex(
-      (r) =>
-        r.id === 11 ||
-        (r.caption && r.caption.toLowerCase().includes('belakang')) ||
-        (r.file_path && r.file_path.toLowerCase().includes('belakang'))
-    );
-
-    if (belakangIndex > 1) {
-      const [belakangRow] = sortedRows.splice(belakangIndex, 1);
-      sortedRows.splice(1, 0, belakangRow);
-    }
-
-    // 3. Map to MediaItem ensuring STRICT UNIQUE sequential 0-based sort_order (0, 1, 2, 3, 4...)
-    // This permanently eliminates any duplicate numbers and aligns with the user's requested order:
-    // 1. Tampak Depan
-    // 2. Video Area Belakang (media #4 terakhir jadi no.2)
-    // 3. Area Mezanine
-    // 4. Lingkungan & Jalanan Cluster Asri
-    // 5. Video Walkthrough Hunian
+    // 2. Map to MediaItem ensuring STRICT UNIQUE sequential 0-based sort_order (0, 1, 2, 3, 4...)
     return sortedRows.map((row: SupabasePropertyMediaRow, index: number) => {
       const publicUrl = getStoragePublicUrl(row.file_path);
       const isVideo = row.media_type === 'video';
@@ -266,23 +246,24 @@ export async function fetchPropertyMedia(propertyId?: number): Promise<MediaItem
 
       const lowerCap = rawCaption.toLowerCase();
       let cleanCaption = rawCaption;
-      if (lowerCap === 'belakang') {
-        cleanCaption = isVideo ? 'Video Area Belakang' : 'Area Belakang';
-      }
 
       const category = getSlotCategory(sortOrder, isVideo, cleanCaption);
 
       let defaultTitle = isVideo ? 'Video Walkthrough Hunian' : 'Foto Dokumentasi Properti';
-      if (sortOrder === 0 || lowerCap.includes('depan')) {
-        defaultTitle = 'Tampak Depan Rumah & Carport';
-      } else if (lowerCap.includes('belakang') || row.id === 11) {
-        defaultTitle = isVideo ? 'Video Area Belakang' : 'Area Belakang Hunian';
-      } else if (lowerCap.includes('mezanine')) {
-        defaultTitle = 'Area Mezanine 1/2 Lantai & Tangga';
-      } else if (lowerCap.includes('cluster') || lowerCap.includes('jalan')) {
-        defaultTitle = 'Lingkungan & Jalanan Cluster Asri';
-      } else if (lowerCap.includes('walkthrough') || isVideo) {
-        defaultTitle = 'Video Walkthrough Hunian';
+      if (sortOrder === 0) {
+        defaultTitle = cleanCaption || 'Foto Depan Rumah & Carport';
+      } else if (sortOrder === 1) {
+        defaultTitle = cleanCaption || 'Foto Mezanine 1/2 Lantai & Tangga';
+      } else if (sortOrder === 2) {
+        defaultTitle = cleanCaption || 'Foto Jalanan & Lingkungan Cluster';
+      } else if (isVideo) {
+        if (lowerCap.includes('belakang') || row.id === 11) {
+          defaultTitle = 'Video Area Belakang';
+        } else if (lowerCap.includes('walkthrough')) {
+          defaultTitle = 'Video Walkthrough Hunian';
+        } else {
+          defaultTitle = cleanCaption || `Video Dokumentasi #${sortOrder + 1}`;
+        }
       } else {
         defaultTitle = cleanCaption || `Dokumentasi Properti #${sortOrder + 1}`;
       }
@@ -302,6 +283,12 @@ export async function fetchPropertyMedia(propertyId?: number): Promise<MediaItem
         description:
           cleanCaption && cleanCaption !== 'belakang'
             ? cleanCaption
+            : sortOrder === 0
+            ? 'Foto fasad dan tampak depan rumah asli di cluster.'
+            : sortOrder === 1
+            ? 'Foto area mezanine fungsional 1/2 lantai dengan sirkulasi udara optimal.'
+            : sortOrder === 2
+            ? 'Foto lingkungan dan jalanan cluster asri yang tertata dan nyaman.'
             : lowerCap.includes('belakang') || row.id === 11
             ? 'Video dokumentasi asli area belakang hunian.'
             : isVideo
@@ -419,10 +406,10 @@ export async function uploadMediaFile(
         throw vErr;
       }
 
-      // The 50MB limit applies only to the final compressed file uploaded to Supabase
+      // The 50MB limit applies only to the final compressed file uploaded
       if (uploadFile.size > 50 * 1024 * 1024) {
         throw new Error(
-          `Ukuran video hasil kompresi (${formatFileSize(uploadFile.size)}) melebihi batas 50MB Supabase Storage. Silakan potong durasi video.`
+          `Ukuran video hasil kompresi (${formatFileSize(uploadFile.size)}) melebihi batas 50MB. Silakan potong durasi video.`
         );
       }
     }
@@ -430,7 +417,7 @@ export async function uploadMediaFile(
     const { isVideo, contentType, fileName } = resolveMediaInfo(uploadFile);
     const filePath = `properties/${realPropertyId}/${fileName}`;
 
-    onProgress?.(`Mengunggah ${isVideo ? 'video terkompresi' : 'berkas'} (${formatFileSize(uploadFile.size)}) ke Supabase Storage...`);
+    onProgress?.(`Mengunggah ${isVideo ? 'video terkompresi' : 'berkas'} (${formatFileSize(uploadFile.size)}) ke penyimpanan cloud...`);
 
     // 2. Upload file to Supabase Storage bucket "property-media"
     const { error: uploadErr } = await supabase.storage

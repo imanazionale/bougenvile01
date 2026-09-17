@@ -19,7 +19,7 @@ import {
 import { User } from '@supabase/supabase-js';
 import { ColorThemeId, PhotoLayout, PropertyPhotos, MediaItem, PropertyData, GallerySlotInfo } from './types';
 import { PROPERTY_DATA, COLOR_THEMES } from './data';
-import { getNextGallerySlot, getSlotBadge } from './lib/gallerySlots';
+import { getNextGallerySlot, getSlotBadge, orderGalleryMediaItems } from './lib/gallerySlots';
 import { formatUploadErrorMessage, formatFileSize } from './lib/imageOptimizer';
 import { AdPoster } from './components/AdPoster';
 import { AdCustomizerControls } from './components/AdCustomizerControls';
@@ -198,19 +198,21 @@ export default function App() {
               supabaseMedia.find(
                 (m) =>
                   m.type === 'photo' &&
-                  (m.category === 'mezzanine' ||
+                  (m.sort_order === 1 ||
+                    m.category === 'mezzanine' ||
                     (m.caption && m.caption.toLowerCase().includes('mezanine')))
-              ) || supabaseMedia.find((m) => m.type === 'photo' && m.sort_order === 2);
+              ) || supabaseMedia.find((m) => m.type === 'photo' && m.sort_order === 1);
 
             const clusterItem =
               supabaseMedia.find(
                 (m) =>
                   m.type === 'photo' &&
-                  (m.category === 'cluster' ||
+                  (m.sort_order === 2 ||
+                    m.category === 'cluster' ||
                     (m.caption &&
                       (m.caption.toLowerCase().includes('cluster') ||
                         m.caption.toLowerCase().includes('jalan'))))
-              ) || supabaseMedia.find((m) => m.type === 'photo' && m.sort_order === 3);
+              ) || supabaseMedia.find((m) => m.type === 'photo' && m.sort_order === 2);
 
             setPhotos({
               heroExterior: exteriorItem?.url || undefined,
@@ -218,12 +220,12 @@ export default function App() {
               clusterStreet: clusterItem?.url || undefined,
             });
 
-            // If an admin user session is active, silently sync the verified sort_order back to Supabase
+            // If an admin user session is active, silently sync the verified sort_order back
             supabase.auth.getSession().then(({ data: sessData }) => {
               if (sessData?.session?.user && supabaseMedia.length > 0) {
                 const dbPayload = supabaseMedia
                   .filter((m) => m.supabaseId)
-                  .map((m, idx) => ({ id: m.supabaseId!, sort_order: idx + 1 }));
+                  .map((m, idx) => ({ id: m.supabaseId!, sort_order: idx }));
                 reorderMediaItems(dbPayload).catch(() => {});
               }
             });
@@ -251,7 +253,7 @@ export default function App() {
   }, []);
 
   const handleThemeChange = (id: ColorThemeId) => {
-    setCurrentThemeId(id);
+    setTheme(id);
   };
 
   const handleLayoutChange = (layout: PhotoLayout) => {
@@ -343,7 +345,7 @@ export default function App() {
           ? 'area mezanine'
           : 'kondisi jalanan cluster';
 
-      showToast('success', `Foto ${label} berhasil diunggah dan tersimpan permanen di Supabase!`);
+      showToast('success', `Foto ${label} berhasil diperbarui!`);
     } catch (err: any) {
       console.error('Photo upload error:', err);
       const errMsg = formatUploadErrorMessage(err, file);
@@ -383,7 +385,7 @@ export default function App() {
     }
 
     setIsUploading(true);
-    setUploadProgressText(`Mengunggah berkas ${slotInfo.label} ke Supabase Storage...`);
+    setUploadProgressText(`Mengunggah berkas ${slotInfo.label}...`);
 
     try {
       const propRecord = await ensurePropertyRecord({
@@ -423,12 +425,18 @@ export default function App() {
       );
 
       if (error || !item) {
-        throw error || new Error('Gagal mengunggah berkas ke Supabase.');
+        throw error || new Error('Gagal mengunggah berkas.');
       }
 
       setMediaItems((prev) => {
         const filtered = prev.filter((m) => m.sort_order !== slotInfo.sort_order);
-        return [...filtered, item].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+        const combined = [...filtered, item];
+        const sorted = orderGalleryMediaItems(combined);
+        return sorted.map((m, idx) => ({
+          ...m,
+          sort_order: idx,
+          badge: getSlotBadge(idx, m.caption, m.type === 'video'),
+        }));
       });
 
       if (slotInfo.sort_order === 0) {
@@ -439,7 +447,7 @@ export default function App() {
         setPhotos((prev) => ({ ...prev, clusterStreet: item.url }));
       }
 
-      showToast('success', `${slotInfo.badge} berhasil diunggah dan tersimpan di database Supabase!`);
+      showToast('success', `${slotInfo.badge} berhasil diunggah!`);
     } catch (err: any) {
       console.error('Next slot upload error:', err);
       const errMsg = formatUploadErrorMessage(err, file);
@@ -578,11 +586,19 @@ export default function App() {
       }
 
       if (newItems.length > 0) {
-        setMediaItems((prev) => [...prev, ...newItems]);
+        setMediaItems((prev) => {
+          const combined = [...prev, ...newItems];
+          const sorted = orderGalleryMediaItems(combined);
+          return sorted.map((m, idx) => ({
+            ...m,
+            sort_order: idx,
+            badge: getSlotBadge(idx, m.caption, m.type === 'video'),
+          }));
+        });
         if (uploadErrors.length === 0) {
           showToast(
             'success',
-            `${uploadedCount} media berhasil diunggah ke Supabase Storage bucket "property-media"!`
+            `${uploadedCount} media berhasil diunggah ke galeri properti!`
           );
         } else {
           showToast(
@@ -633,7 +649,7 @@ export default function App() {
     if (item.supabaseId) {
       const { success, error } = await deleteMediaFile(item.supabaseId, item.file_path);
       if (error) {
-        showToast('error', error.message || 'Gagal menghapus media dari Supabase.');
+        showToast('error', error.message || 'Gagal menghapus media.');
         return;
       }
     }
@@ -654,7 +670,7 @@ export default function App() {
       setPhotos((prev) => ({ ...prev, clusterStreet: undefined }));
     }
 
-    showToast('success', 'Media berhasil dihapus dari Supabase.');
+    showToast('success', 'Media berhasil dihapus.');
   };
 
   // Reorder gallery items
@@ -700,9 +716,9 @@ export default function App() {
     if (dbPayload.length > 0) {
       const { error } = await reorderMediaItems(dbPayload);
       if (error) {
-        showToast('error', 'Gagal memperbarui urutan di Supabase: ' + error.message);
+        showToast('error', 'Gagal memperbarui urutan: ' + error.message);
       } else {
-        showToast('success', 'Urutan galeri berhasil disimpan di Supabase!');
+        showToast('success', 'Urutan galeri berhasil disimpan!');
       }
     }
   };
@@ -733,7 +749,7 @@ export default function App() {
     }
 
     setIsUploading(true);
-    setUploadProgressText('Mengunggah file pengganti ke Supabase Storage...');
+    setUploadProgressText('Mengunggah file pengganti...');
 
     try {
       let updatedItem: MediaItem | null = null;
@@ -748,7 +764,7 @@ export default function App() {
           (statusText) => setUploadProgressText(statusText)
         );
         if (error || !item) {
-          throw error || new Error('Gagal mengganti file media di Supabase.');
+          throw error || new Error('Gagal mengganti file media.');
         }
         updatedItem = item;
       } else {
@@ -770,7 +786,7 @@ export default function App() {
           (statusText) => setUploadProgressText(statusText)
         );
         if (error || !item) {
-          throw error || new Error('Gagal mengunggah file pengganti ke Supabase.');
+          throw error || new Error('Gagal mengunggah file pengganti.');
         }
         updatedItem = item;
       }
@@ -789,7 +805,7 @@ export default function App() {
         setPhotos((prev) => ({ ...prev, clusterStreet: updatedItem!.url }));
       }
 
-      showToast('success', 'Foto/video berhasil diganti dan diperbarui di database Supabase!');
+      showToast('success', 'Foto/video berhasil diganti dan diperbarui!');
     } catch (err: any) {
       console.error('Replace media error:', err);
       const errMsg = formatUploadErrorMessage(err, newFile);
@@ -895,7 +911,7 @@ export default function App() {
                 )}
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                Format Portrait 4:5 • Terintegrasi Supabase Backend
+                Format Portrait 4:5 • Dokumentasi & Informasi Resmi Terverifikasi
               </p>
             </div>
           </div>
@@ -912,7 +928,7 @@ export default function App() {
                   type="button"
                   onClick={() => setEditPropertyModalOpen(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-500/30 transition cursor-pointer shadow-xs dark:shadow-none"
-                  title="Edit data properti di Supabase"
+                  title="Edit data info properti"
                 >
                   <Building className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">Edit Info Properti</span>
@@ -1014,7 +1030,7 @@ export default function App() {
             <div className="w-full max-w-[480px] sm:max-w-[500px] mt-2 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800/80 px-3.5 py-2 rounded-xl shadow-xs dark:shadow-none">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
-                <span>Foto asli tersimpan di Supabase Storage bucket <strong>property-media</strong></span>
+                <span>Dokumentasi asli foto & video langsung dari lokasi hunian</span>
               </div>
               <button
                 type="button"
@@ -1132,7 +1148,7 @@ export default function App() {
         propertyData={propertyData}
         onSaveSuccess={(updated) => {
           setPropertyData(updated);
-          showToast('success', 'Informasi properti berhasil diperbarui di Supabase!');
+          showToast('success', 'Informasi properti berhasil diperbarui!');
         }}
       />
 
@@ -1146,7 +1162,7 @@ export default function App() {
         mediaItem={captionEditItem}
         onSaveSuccess={(updated) => {
           setMediaItems((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
-          showToast('success', 'Keterangan media berhasil disimpan di Supabase!');
+          showToast('success', 'Keterangan media berhasil disimpan!');
         }}
       />
 

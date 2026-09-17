@@ -132,7 +132,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">
               <Camera className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-              <span>Foto Asli Rumah (Tersimpan di Supabase Storage)</span>
+              <span>Foto Dokumentasi Asli Rumah</span>
             </div>
             {isAdmin && (
               <button
@@ -451,7 +451,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
       </div>
 
       {/* Property Information Verification Card with Edit Option */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800/70 text-xs text-neutral-600 dark:text-neutral-400 shadow-xs dark:shadow-none space-y-2">
+      <div className="p-3.5 rounded-xl bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800/70 text-xs text-neutral-600 dark:text-neutral-400 shadow-xs dark:shadow-none space-y-2.5">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-1.5 text-neutral-900 dark:text-neutral-300 font-semibold">
             <HelpCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
@@ -465,7 +465,7 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
               type="button"
               onClick={handleEditPropertyClick}
               className="flex items-center gap-1 px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 hover:bg-amber-500/20 text-neutral-700 dark:text-neutral-300 hover:text-amber-700 dark:hover:text-amber-300 text-[11px] font-medium border border-neutral-300 dark:border-neutral-700 transition cursor-pointer"
-              title="Edit Informasi Properti di Supabase"
+              title="Edit Informasi Properti"
             >
               {!isAdmin ? <Lock className="w-3 h-3" /> : <Edit3 className="w-3 h-3" />}
               <span>Edit Info Properti</span>
@@ -473,8 +473,14 @@ export const AdCustomizerControls: React.FC<AdCustomizerControlsProps> = ({
           </div>
         </div>
         <p className="leading-relaxed text-[11px] text-neutral-600 dark:text-neutral-400">
-          Semua detail tersimpan di tabel <strong>properties</strong> & <strong>property_media</strong> Supabase: <strong>Mezanine 1/2 lantai</strong>, <strong>LT 88 m²</strong>, <strong>Sewa: {priceFull}</strong> di <strong>Taman Jaya, Cipayung – Depok</strong>. Menggunakan foto rumah asli Anda yang tersimpan di bucket <strong>property-media</strong> tanpa modifikasi AI.
+          Spesifikasi unit: <strong>Mezanine 1/2 lantai</strong>, <strong>LT 88 m²</strong>, <strong>Sewa: {priceFull}</strong> di <strong>Taman Jaya, Cipayung – Depok</strong>. Menggunakan foto dan dokumentasi rumah asli yang terverifikasi langsung di lokasi.
         </p>
+
+        {/* Cluster Information Card */}
+        <div className="p-2.5 rounded-lg bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/20 text-[11px] text-neutral-700 dark:text-neutral-300 leading-relaxed">
+          <span className="font-semibold text-amber-900 dark:text-amber-300 block mb-0.5">Kondisi Lingkungan Cluster:</span>
+          Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.
+        </div>
       </div>
     </div>
   );

@@ -30,6 +30,9 @@ ${data.priceFull} (${data.price}/bln)
 • Konsep: ${data.mezzanine}
 • Luas Tanah: ${data.landArea}
 
+🏡 Lingkungan & Suasana Cluster:
+Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.
+
 KENAPA PILIH RUMAH INI?
 ✓ Cluster Islami
 ✓ Masjid di Dalam Cluster

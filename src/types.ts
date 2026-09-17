@@ -33,6 +33,7 @@ export interface PropertyData {
   priceFull: string;
   targetAudience: string;
   description?: string;
+  clusterInfo?: string;
   highlights: {
     id: string;
     text: string;

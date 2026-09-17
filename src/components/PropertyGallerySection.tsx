@@ -71,7 +71,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
   onEditCaption,
   onReplaceMedia,
   isUploading = false,
-  uploadProgressText = 'Mengunggah ke Supabase Storage...',
+  uploadProgressText = 'Mengunggah media...',
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -156,7 +156,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-2xl">
-            Jelajahi dokumentasi nyata hunian tanpa manipulasi AI. Klik thumbnail untuk membuka pratinjau resolusi penuh atau memutar video walkthrough.
+            Jelajahi dokumentasi nyata hunian langsung dari lokasi. Klik thumbnail untuk membuka pratinjau resolusi penuh atau memutar video walkthrough.
           </p>
         </div>
 
@@ -203,7 +203,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                 ? 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border-amber-500/30'
                 : 'bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'
             }`}
-            title={isAdmin ? 'Unggah foto atau video ke Supabase Storage' : 'Login Admin untuk mengunggah'}
+            title={isAdmin ? 'Unggah foto atau video ke galeri' : 'Login Admin untuk mengunggah'}
           >
             {isUploading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -437,7 +437,7 @@ export const PropertyGallerySection: React.FC<PropertyGallerySectionProps> = ({
                           onRemoveMedia(item);
                         }}
                         className="text-neutral-400 hover:text-rose-500 dark:text-neutral-500 dark:hover:text-rose-400 p-1 rounded transition cursor-pointer"
-                        title="Hapus media dari Supabase"
+                        title="Hapus media dari galeri"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

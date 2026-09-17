@@ -44,7 +44,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({
       if (mediaItem.supabaseId) {
         const { success, error } = await updateMediaCaption(mediaItem.supabaseId, caption.trim());
         if (error) {
-          setErrorMsg(error.message || 'Gagal menyimpan caption ke Supabase.');
+          setErrorMsg(error.message || 'Gagal menyimpan keterangan media.');
           setLoading(false);
           return;
         }
@@ -81,7 +81,7 @@ export const EditCaptionModal: React.FC<EditCaptionModalProps> = ({
                 Edit Keterangan Media
               </h3>
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                Update Caption di Tabel "property_media"
+                Pembaruan Keterangan Foto / Video
               </p>
             </div>
           </div>

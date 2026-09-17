@@ -44,7 +44,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
           if (error.message.toLowerCase().includes('invalid login credentials')) {
             setErrorMsg('Email atau password tidak sesuai. Pastikan Anda sudah mendaftar dan mengonfirmasi email.');
           } else if (error.message.toLowerCase().includes('email not confirmed')) {
-            setErrorMsg('Email belum dikonfirmasi. Periksa kotak masuk / spam email Anda dan klik tautan konfirmasi dari Supabase.');
+            setErrorMsg('Email belum dikonfirmasi. Periksa kotak masuk / spam email Anda dan klik tautan konfirmasi.');
           } else {
             setErrorMsg(error.message);
           }
@@ -73,14 +73,14 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
           }, 1000);
         } else {
           setSuccessMsg(
-            'Akun admin berhasil didaftarkan! Supabase telah mengirimkan email konfirmasi ke ' +
+            'Akun admin berhasil didaftarkan! Tautan konfirmasi telah dikirimkan ke ' +
               email +
               '. Silakan periksa inbox/spam email Anda lalu klik tautan konfirmasi, kemudian kembali login.'
           );
         }
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan sistem saat menghubungi Supabase Auth.');
+      setErrorMsg(err.message || 'Terjadi kesalahan sistem autentikasi.');
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
                 Autentikasi Admin Properti
               </h3>
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                Supabase Auth • Akses Pengelolaan Media & Data
+                Akses Pengelolaan Media & Data Properti
               </p>
             </div>
           </div>

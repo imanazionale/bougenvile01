@@ -170,7 +170,11 @@ export const SocialPreviewModal: React.FC<SocialPreviewModalProps> = ({
                 </div>
 
                 <div className="p-2.5 rounded-lg bg-neutral-800/80 border border-neutral-700/60 space-y-1 text-xs">
-                  <p className="font-semibold text-amber-300">Highlight Properti:</p>
+                  <p className="font-semibold text-amber-300">Kondisi & Lingkungan Cluster:</p>
+                  <p className="text-neutral-300 text-[11px] leading-relaxed">
+                    Cluster sudah 95% terhuni, lingkungan nyaman dan aktif, dengan suasana hunian yang aman dan tertata. Tersedia masjid di dalam cluster sehingga memudahkan aktivitas ibadah sehari-hari.
+                  </p>
+                  <p className="font-semibold text-amber-300 pt-1">Highlight Properti:</p>
                   <p className="text-neutral-300">• Cluster Islami & Masjid di Dalam Cluster</p>
                   <p className="text-neutral-300">• ±10 Menit Stasiun Depok & Dekat Tol Desari</p>
                   <p className="text-neutral-300">• Smart Door Lock & AC 1/2 PK</p>
