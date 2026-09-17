@@ -871,7 +871,7 @@ export default function App() {
       });
 
       const link = document.createElement('a');
-      link.download = `iklan-rumah-dikontrakkan-depok-4x5-${currentThemeId}.png`;
+      link.download = `Rumah-dikontrakkan-depok-4x5-${currentThemeId}.png`;
       link.href = dataUrl;
       link.click();
 
@@ -898,7 +898,7 @@ export default function App() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white tracking-wide truncate">
-                  Desain Promosi Rumah Kontrakan
+                  Rumah Dikontrakkan di Depok dalam Cluster
                 </h1>
                 <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-widest bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">
                   Depok
